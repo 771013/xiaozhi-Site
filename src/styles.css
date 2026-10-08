@@ -7,20 +7,21 @@ button{cursor:pointer;border:0}
 img{display:block}
 .page{width:100%;overflow:hidden;background:#fff}
 .shell{width:min(1200px,calc(100% - 48px));margin-inline:auto}
+section[id]{scroll-margin-top:70px}
 
 .hero{position:relative;height:720px;color:#fff;background:#006cff;overflow:hidden}
-.site-header{height:112px;display:flex;align-items:flex-start;justify-content:space-between;padding-top:32px;position:relative;z-index:5}
-.brand{display:flex;align-items:center;gap:8px;margin-top:13px;padding:0;color:#fff;background:transparent;font-size:22px;font-weight:600;letter-spacing:1px}
+.site-header{width:100%;height:70px;display:flex;align-items:center;justify-content:space-between;position:fixed;z-index:50;top:0;right:0;left:0;margin:0;padding:0 max(24px,calc((100% - 1200px)/2));background:#006aff}
+.brand{display:flex;align-items:center;gap:8px;margin:0;padding:0;color:#fff;background:transparent;font-size:22px;font-weight:600;letter-spacing:1px;transform:translateY(2px)}
 .brand-mark{width:32px;height:32px;display:block;position:relative;flex:none;overflow:hidden;border:.5px solid #fff;border-radius:8px;background:#1677ff}
 .brand-mark img{width:32px;height:32px;object-fit:cover;transform:translate(-.5px,-.5px)}
-.nav{height:60px;width:636px;position:relative;display:flex;align-items:center;justify-content:space-between;padding:0 48px;border-radius:60px;background:rgba(255,255,255,.25);backdrop-filter:blur(13px)}
-.nav::before{content:"";position:absolute;inset:0;padding:1px;border-radius:inherit;background:linear-gradient(to bottom,rgba(255,255,255,.75),rgba(255,255,255,.08));-webkit-mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);-webkit-mask-composite:xor;mask-composite:exclude;pointer-events:none}
+.nav{width:auto;position:relative;display:flex;align-items:center;gap:48px;margin-right:14px;padding:0;background:transparent}
+.nav::before{display:none}
 .nav button{position:relative;padding:0;color:rgba(255,255,255,.64);background:none;font-size:14px;letter-spacing:.3px}
 .nav button.active,.nav button:hover{color:#fff}
 .nav button::after{content:"";position:absolute;left:50%;bottom:-8px;width:20px;height:2px;background:#fff;border-radius:1px;transform:translateX(-50%) scaleX(0);transition:transform .2s}
 .nav button.active::after{transform:translateX(-50%) scaleX(1)}
 .menu-toggle{display:none;background:transparent}
-.hero-content{height:608px;position:relative}
+.hero-content{height:608px;position:relative;margin-top:112px}
 .hero-copy{position:relative;z-index:2;padding-top:88px}
 .eyebrow{display:inline-flex;align-items:center;padding:6px 16px;border-radius:99px;background:rgba(255,255,255,.15);color:#c4ddff;font-size:13px;letter-spacing:.4px}
 .hero h1{margin:7px 0 0;font-family:"HarmonyOS Sans SC","PingFang SC",sans-serif;font-size:64px;line-height:1.5;letter-spacing:4px}
@@ -62,8 +63,7 @@ img{display:block}
 .section-title.light p{color:#f5f6f7}
 .align-right{text-align:right}
 .car-rail{position:absolute;top:131px;left:20px;display:flex;align-items:flex-end;gap:16px}
-.car-card{width:237px;height:269px;position:relative;flex:none;overflow:hidden;padding:0;border-radius:10px;color:#fff;text-align:left;background:#182b34;box-shadow:0 16px 38px rgba(0,0,0,.34);transition:width .24s,height .24s,transform .24s}
-.car-card:hover{transform:translateY(-7px)}
+.car-card{width:237px;height:269px;position:relative;flex:none;overflow:hidden;padding:0;border-radius:10px;color:#fff;text-align:left;background:#182b34;box-shadow:0 16px 38px rgba(0,0,0,.34)}
 .car-card.teaser{margin-left:-253px}
 .car-card.featured{width:402px;height:451px;border:2px solid rgba(255,255,255,.8);border-radius:16px}
 .car-card>img{width:100%;height:100%;object-fit:cover;object-position:center 62%}
@@ -113,7 +113,6 @@ img{display:block}
 .service-subheading{margin:0 0 12px!important}
 .service-group-2 .service-entry:last-child{margin-top:16px}
 @media(min-width:901px){
-  .nav button{transform:translateY(-3px)}
   .service-group-0 .service-items{gap:21px}
   .service-group-0 .service-entry:last-child .service-item{min-height:112px}
   .service-group-1 .service-items{gap:17px}
@@ -142,7 +141,7 @@ img{display:block}
 .dialog-action{width:100%;height:48px;display:flex;align-items:center;justify-content:space-between;margin-top:26px;padding:0 20px;border-radius:10px;color:#fff;background:#006aff;font-weight:600}
 
 @media(max-width:1280px){
-  .nav{width:580px;padding-inline:30px}
+  .nav{gap:32px;margin-right:0}
   .hero-visual{left:39.5%;width:70.25vw}
   .service-groups{grid-template-columns:1fr 1fr 1.34fr;gap:18px}
   .service-group{padding-inline:18px}
@@ -153,6 +152,7 @@ img{display:block}
 }
 
 @media(min-width:1281px){
+  .stats{grid-template-columns:minmax(0,1fr) minmax(0,1fr) 260px}
   .service-inner>.section-title{margin-left:-20px}
   .service-groups{right:-20px;bottom:204px;left:-20px;grid-template-columns:356px 26px 356px 22px 480px;gap:0}
   .service-group{padding:24px}
@@ -179,16 +179,16 @@ img{display:block}
   .shell{width:min(620px,calc(100% - 36px))}
   .desktop-only{display:none}
   .hero{height:900px}
-  .site-header{height:76px;padding-top:16px;align-items:center}
-  .brand{margin-top:0;font-size:19px}
-  .nav{position:absolute;top:70px;left:0;right:0;width:auto;height:auto;display:none;flex-direction:column;align-items:stretch;gap:4px;padding:14px;border-radius:18px;background:rgba(0,77,200,.96)}
+  .site-header{width:100%;height:70px;margin:0;padding:0 18px}
+  .brand{font-size:19px}
+  .nav{position:absolute;top:70px;left:18px;right:18px;width:auto;height:auto;display:none;flex-direction:column;align-items:stretch;gap:4px;margin:0;padding:14px;border-radius:18px;background:rgba(0,77,200,.96)}
   .nav.open{display:flex}
   .nav::before{display:none}
   .nav button{padding:12px;text-align:left}
   .nav button::after{display:none}
   .menu-toggle{width:42px;height:42px;display:grid;place-content:center;gap:5px}
   .menu-toggle span{width:24px;height:2px;background:#fff}
-  .hero-content{height:auto}
+  .hero-content{height:auto;margin-top:76px}
   .hero-copy{padding-top:54px}
   .hero h1{font-size:48px}
   .hero h2{font-size:21px}

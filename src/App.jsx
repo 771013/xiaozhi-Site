@@ -54,22 +54,6 @@ function scrollToSection(id) {
   document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
 }
 
-function moveTabFocus(event, indexes, currentIndex, setSelected, refs) {
-  const currentPosition = indexes.indexOf(currentIndex)
-  let nextPosition = currentPosition
-
-  if (event.key === 'ArrowRight' || event.key === 'ArrowDown') nextPosition = (currentPosition + 1) % indexes.length
-  else if (event.key === 'ArrowLeft' || event.key === 'ArrowUp') nextPosition = (currentPosition - 1 + indexes.length) % indexes.length
-  else if (event.key === 'Home') nextPosition = 0
-  else if (event.key === 'End') nextPosition = indexes.length - 1
-  else return
-
-  event.preventDefault()
-  const nextIndex = indexes[nextPosition]
-  setSelected(nextIndex)
-  refs.current[nextIndex]?.focus()
-}
-
 function MiniProgramDialog({ onClose, returnFocusRef }) {
   const closeButton = useRef(null)
 
@@ -101,12 +85,8 @@ function MiniProgramDialog({ onClose, returnFocusRef }) {
 function App() {
   const [active, setActive] = useState('home')
   const [menuOpen, setMenuOpen] = useState(false)
-  const [selectedCar, setSelectedCar] = useState(1)
-  const [selectedBenefit, setSelectedBenefit] = useState(1)
   const [dialogOpen, setDialogOpen] = useState(false)
   const compareButtonRef = useRef(null)
-  const carTabRefs = useRef([])
-  const benefitTabRefs = useRef([])
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -194,22 +174,16 @@ function App() {
             <h2>车型介绍</h2>
             <p>多样车型选择，满足不同出行场景</p>
           </div>
-          <div className="car-rail" role="tablist" aria-label="车型分类">
+          <div className="car-rail">
             {carCards.map((car, index) => (
               car.teaser ? <div className="car-card teaser" key="teaser" aria-hidden="true"><img src={asset(car.image)} alt="" /></div> :
-              <button
-                className={`car-card ${selectedCar === index ? 'featured' : ''}`}
+              <article
+                className={`car-card ${index === 1 ? 'featured' : ''}`}
                 key={`${car.title}-${car.image}`}
-                ref={(node) => { carTabRefs.current[index] = node }}
-                role="tab"
-                aria-selected={selectedCar === index}
-                tabIndex={selectedCar === index ? 0 : -1}
-                onClick={() => setSelectedCar(index)}
-                onKeyDown={(event) => moveTabFocus(event, [1, 2, 3, 4, 5], index, setSelectedCar, carTabRefs)}
               >
                 <img src={asset(car.image)} alt="" />
-                <span className="car-caption"><strong>{car.title}</strong>{selectedCar === index && <small>{car.copy || '随心出发，发现更多可能'}</small>}</span>
-              </button>
+                <span className="car-caption"><strong>{car.title}</strong>{index === 1 && <small>{car.copy}</small>}</span>
+              </article>
             ))}
           </div>
         </div>
@@ -221,23 +195,17 @@ function App() {
             <h2>小支比价</h2>
             <p>透明价格，比出超高性价比</p>
           </div>
-          <div className="compare-list" role="tablist" aria-label="比价优势">
+          <div className="compare-list">
             {compareItems.map((item, index) => (
-              <button
-                className={`compare-row ${selectedBenefit === index ? 'active' : ''}`}
+              <article
+                className={`compare-row ${index === 1 ? 'active' : ''}`}
                 key={item.title}
-                ref={(node) => { benefitTabRefs.current[index] = node }}
-                role="tab"
-                aria-selected={selectedBenefit === index}
-                tabIndex={selectedBenefit === index ? 0 : -1}
-                onClick={() => setSelectedBenefit(index)}
-                onKeyDown={(event) => moveTabFocus(event, [0, 1, 2], index, setSelectedBenefit, benefitTabRefs)}
               >
                 <span className="compare-icon"><img src={asset(item.icon)} alt="" /></span>
                 <strong>{item.title}</strong>
                 <span className="compare-description">{item.copy}</span>
-                {selectedBenefit === index && <img className="compare-decoration" src={asset('b9389.png')} alt="" />}
-              </button>
+                {index === 1 && <img className="compare-decoration" src={asset('b9389.png')} alt="" />}
+              </article>
             ))}
           </div>
         </div>

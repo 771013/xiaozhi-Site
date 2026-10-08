@@ -21,16 +21,13 @@ describe('小支租车官网交互', () => {
     vi.unstubAllGlobals()
   })
 
-  it('用方向键切换车型标签，并把焦点移到新标签', () => {
-    render(<App />)
-    const luxuryTab = screen.getByRole('tab', { name: /豪华型/ })
+  it('车型介绍和小支比价保持静态展示，不提供卡片点击切换', () => {
+    const { container } = render(<App />)
 
-    luxuryTab.focus()
-    fireEvent.keyDown(luxuryTab, { key: 'ArrowRight' })
-
-    const energyTabs = screen.getAllByRole('tab', { name: /新能源/ })
-    expect(energyTabs[0]).toHaveAttribute('aria-selected', 'true')
-    expect(energyTabs[0]).toHaveFocus()
+    expect(container.querySelectorAll('#cars button')).toHaveLength(0)
+    expect(container.querySelectorAll('#compare button')).toHaveLength(0)
+    expect(container.querySelector('#cars .car-card.featured')).toHaveTextContent('豪华型')
+    expect(container.querySelector('#compare .compare-row.active')).toHaveTextContent('安心护航')
   })
 
   it('打开比价弹窗后可按 Escape 关闭并恢复按钮焦点', () => {
