@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { clamp, countAtProgress, easeOutQuart, getActiveCarIndex, getCarPose, getLoopCarPose, getLoopCarIndex } from './motion.js'
+import { advanceLoopPhase, clamp, countAtProgress, easeOutQuart, getActiveCarIndex, getCarPose, getLoopCarFocusX, getLoopCarPose, getLoopCarIndex } from './motion.js'
 
 describe('motion helpers', () => {
   it('clamps values to the supplied range', () => {
@@ -59,5 +59,19 @@ describe('motion helpers', () => {
     const next = getLoopCarPose(4, 3 * 276, 10)
 
     expect(next.x - (active.x + 258 * active.scale)).toBeCloseTo(18, 4)
+  })
+
+  it('循环车型焦点落在全宽舞台的版心左边缘', () => {
+    expect(getLoopCarFocusX(1440)).toBe(120)
+    expect(getLoopCarFocusX(1280)).toBe(40)
+    expect(getLoopCarFocusX(1024)).toBe(24)
+
+    const focused = getLoopCarPose(3, 3 * 276, 10, getLoopCarFocusX(1440))
+    expect(focused.x).toBe(120)
+  })
+
+  it('循环车型以更紧凑的节奏经过放大焦点', () => {
+    expect(advanceLoopPhase(0, 16)).toBeCloseTo(0.64)
+    expect(advanceLoopPhase(10, 100)).toBeCloseTo(11.6)
   })
 })

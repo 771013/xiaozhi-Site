@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { asset } from './assets.js'
-import { getLoopCarIndex, getLoopCarPose, prefersReducedMotion, useCountUp } from './motion.js'
+import { advanceLoopPhase, getLoopCarFocusX, getLoopCarIndex, getLoopCarPose, prefersReducedMotion, useCountUp } from './motion.js'
 
 const navItems = [
   ['首页', 'home'],
@@ -138,13 +138,13 @@ function App() {
 
       if (!motionDisabled) {
         if (!lastTime) lastTime = time
-        phase += Math.min(40, Math.max(0, time - lastTime)) * 0.028
+        phase = advanceLoopPhase(phase, time - lastTime)
         lastTime = time
       }
 
       carRefs.current.forEach((card, index) => {
         if (!card) return
-        const pose = getLoopCarPose(index, phase, carCards.length)
+        const pose = getLoopCarPose(index, phase, carCards.length, getLoopCarFocusX(window.innerWidth))
         card.style.transform = `translate3d(${pose.x}px,0,0) scale(${pose.scale})`
         card.style.opacity = String(pose.opacity)
         card.style.zIndex = String(pose.zIndex)
@@ -194,7 +194,7 @@ function App() {
   }, [])
 
   useEffect(() => {
-    const revealNodes = [...document.querySelectorAll('[data-reveal]')]
+    const revealNodes = [...document.querySelectorAll('[data-reveal],[data-contact-reveal]')]
     const revealAll = () => revealNodes.forEach((node) => node.classList.add('is-visible'))
 
     if (prefersReducedMotion() || typeof IntersectionObserver !== 'function') {
@@ -283,20 +283,20 @@ function App() {
               <h2>车型介绍</h2>
               <p>多样车型选择，满足不同出行场景</p>
             </div>
-            <div className="car-rail" aria-label="车型循环展示">
-              {carCards.map((car, index) => (
-                <article
-                  className={`car-card ${index === activeCar ? 'featured' : ''}`}
-                  key={`${car.title}-${car.image}`}
-                  ref={(node) => { carRefs.current[index] = node }}
-                  aria-label={car.title}
-                  aria-current={index === activeCar ? 'true' : undefined}
-                >
-                  <img src={asset(car.image)} alt="" />
-                  <span className="car-caption"><strong>{car.title}</strong>{index === activeCar && <small>{car.copy}</small>}</span>
-                </article>
-              ))}
-            </div>
+          </div>
+          <div className="car-rail" aria-label="车型循环展示">
+            {carCards.map((car, index) => (
+              <article
+                className={`car-card ${index === activeCar ? 'featured' : ''}`}
+                key={`${car.title}-${car.image}`}
+                ref={(node) => { carRefs.current[index] = node }}
+                aria-label={car.title}
+                aria-current={index === activeCar ? 'true' : undefined}
+              >
+                <img src={asset(car.image)} alt="" />
+                <span className="car-caption"><strong>{car.title}</strong>{index === activeCar && <small>{car.copy}</small>}</span>
+              </article>
+            ))}
           </div>
         </div>
       </section>
@@ -372,11 +372,16 @@ function App() {
       <section className="contact" id="contact">
         <div className="shell contact-inner">
           <img className="contact-texture" src={asset('63637.png')} alt="" />
-          <img className="contact-mascot" src={asset('250d0.png')} alt="小支租车服务形象" />
+          <div className="contact-mascot-wrap" data-contact-reveal="mascot">
+            <img className="contact-mascot" src={asset('250d0.png')} alt="小支租车服务形象" />
+          </div>
           <div className="contact-copy">
-            <h2>联系我们<br />随时为你解答租车问题</h2>
-            <p>上支付宝搜索“小支租车”，访问小程序</p>
-            <div className="contact-links">
+            <h2>
+              <span data-contact-reveal="left" style={{ '--contact-delay': '140ms' }}>联系我们</span>
+              <span data-contact-reveal="right" style={{ '--contact-delay': '260ms' }}>随时为你解答租车问题</span>
+            </h2>
+            <p data-contact-reveal="left" style={{ '--contact-delay': '390ms' }}>上支付宝搜索“小支租车”，访问小程序</p>
+            <div className="contact-links" data-contact-reveal="right" style={{ '--contact-delay': '520ms' }}>
               <a className="contact-chip" href="tel:4009030845"><span>客服热线</span><b />4009030845</a>
               <a className="contact-chip email" href="mailto:xiaozhizuche@163.com"><span>官方邮箱</span><b />xiaozhizuche@163.com</a>
             </div>

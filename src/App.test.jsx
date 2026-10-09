@@ -125,6 +125,34 @@ describe('小支租车官网交互', () => {
     expect(document.querySelectorAll('#cars .car-card:not(.featured) .car-caption small')).toHaveLength(0)
   })
 
+  it('车型轨道脱离版心容器并直接铺满舞台宽度', () => {
+    const { container } = render(<App />)
+
+    expect(container.querySelector('#cars .cars-stage > .car-rail')).toBeInTheDocument()
+    expect(container.querySelector('#cars .cars-content .car-rail')).not.toBeInTheDocument()
+    expect(styles).toMatch(/\.car-rail\{[^}]*top:clamp\(210px,25vh,270px\)[^}]*right:0[^}]*bottom:auto[^}]*left:0/)
+  })
+
+  it('业务规模标题与数据区域使用相同的底部对齐偏移', () => {
+    expect(styles).toMatch(/\.scale-heading\{[^}]*position:relative[^}]*top:-78px/)
+    expect(styles).toMatch(/\.stats\{[^}]*transform:translate\(-8px,-78px\)/)
+  })
+
+  it('联系我们为人物和左右交错文案提供独立的高级揭示序列', () => {
+    const { container } = render(<App />)
+
+    expect(container.querySelector('#contact [data-contact-reveal="mascot"] .contact-mascot')).toBeInTheDocument()
+    expect(container.querySelectorAll('#contact [data-contact-reveal="left"]')).toHaveLength(2)
+    expect(container.querySelectorAll('#contact [data-contact-reveal="right"]')).toHaveLength(2)
+    expect(styles).toMatch(/\[data-contact-reveal="mascot"\]\{[^}]*filter:blur\(12px\)/)
+    expect(styles).toMatch(/\.contact-mascot-wrap\.is-visible \.contact-mascot\{[^}]*animation:contactMascotFloat/)
+  })
+
+  it('小支比价和联系我们白色板块顶部不保留圆角', () => {
+    expect(styles).toMatch(/\.compare\{[^}]*border-radius:0/)
+    expect(styles).toMatch(/\.contact\{[^}]*border-radius:0/)
+  })
+
   it('比价高亮默认在安心护航，悬停项目时平滑切换并在离开后复位', () => {
     const { container } = render(<App />)
     const list = container.querySelector('#compare .compare-list')
