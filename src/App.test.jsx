@@ -125,7 +125,9 @@ describe('小支租车官网交互', () => {
       .forEach((title) => expect(screen.getByLabelText(title)).toBeInTheDocument())
     expect(document.querySelectorAll('#cars .car-card')).toHaveLength(10)
     expect(document.querySelectorAll('#cars .car-card .car-caption small')).toHaveLength(10)
-    expect(styles).toMatch(/\.car-caption small\{[^}]*opacity:var\(--car-focus\)[^}]*transform:/)
+    expect(styles).toMatch(/\.car-caption small\{[^}]*position:absolute[^}]*opacity:var\(--car-focus\)[^}]*transform:/)
+    expect(styles).not.toMatch(/\.car-caption small\{[^}]*max-height:/)
+    expect(styles).not.toMatch(/\.car-caption small\{[^}]*overflow:hidden/)
     expect(styles).toMatch(/\.car-card::after\{[^}]*opacity:var\(--car-outline\)[^}]*transition:opacity/)
   })
 
@@ -212,18 +214,30 @@ describe('小支租车官网交互', () => {
     expect(contactSnap?.querySelector('#contact')).toBeInTheDocument()
     expect(contactSnap?.querySelector('.footer')).toBeInTheDocument()
     expect(styles).toMatch(/@media\(min-width:901px\)\{[^}]*html\{[^}]*scroll-snap-type:y mandatory/)
+    expect(styles).toMatch(/@media\(min-width:901px\)\{[\s\S]*?section\[id\]\{scroll-margin-top:70px\}/)
     expect(styles).toMatch(/\.hero,\.about,\.cars,\.compare,\.service,\.contact-snap\{[^}]*scroll-snap-align:start[^}]*scroll-snap-stop:always/)
-    expect(styles).toMatch(/\.contact-snap\{[^}]*height:100svh/)
+    expect(styles).toMatch(/\.contact-snap\{[^}]*height:calc\(100svh - 70px\)[^}]*scroll-margin-top:70px/)
   })
 
-  it('桌面主要区块各占满一屏，联系我们连同页脚刚好收束在一屏内', () => {
+  it('桌面导航与主要区块合计占满一屏，联系我们连同页脚刚好收束', () => {
     expect(styles).toMatch(/\.hero\{[^}]*height:100svh/)
-    expect(styles).toMatch(/\.about\{[^}]*height:100svh/)
-    expect(styles).toMatch(/\.cars\{[^}]*height:100svh/)
-    expect(styles).toMatch(/\.compare\{[^}]*height:100svh/)
-    expect(styles).toMatch(/\.service\{[^}]*height:100svh/)
-    expect(styles).toMatch(/\.contact\{[^}]*height:calc\(100svh - 114px\)[^}]*max-height:calc\(100svh - 114px\)/)
+    expect(styles).toMatch(/\.about\{[^}]*height:calc\(100svh - 70px\)/)
+    expect(styles).toMatch(/\.cars\{[^}]*height:calc\(100svh - 70px\)/)
+    expect(styles).toMatch(/\.compare\{[^}]*height:calc\(100svh - 70px\)/)
+    expect(styles).toMatch(/\.service\{[^}]*height:calc\(100svh - 70px\)/)
+    expect(styles).toMatch(/\.contact\{[^}]*height:calc\(100svh - 184px\)[^}]*max-height:calc\(100svh - 184px\)/)
     expect(styles).toMatch(/\.footer\{[^}]*height:114px/)
+  })
+
+  it('桌面模块不再被旧最小高度撑破单屏，矮屏会同步压缩关键内容间距', () => {
+    expect(styles).toMatch(/@media\(min-width:901px\)\{[\s\S]*?\.hero,\.about,\.cars,\.compare,\.service\{min-height:0\}/)
+    expect(styles).toMatch(/@media\(min-width:901px\)\{[\s\S]*?\.cars\{margin-bottom:0\}/)
+    expect(styles).toMatch(/@media\(min-width:901px\)\{[\s\S]*?\.service\{margin-top:0\}/)
+    expect(styles).toMatch(/@media\(min-width:901px\) and \(max-height:820px\)\{/)
+    expect(styles).toMatch(/@media\(min-width:901px\) and \(max-height:820px\)\{[\s\S]*?\.about-grid\{[^}]*padding-top:48px[^}]*padding-bottom:34px/)
+    expect(styles).toMatch(/@media\(min-width:901px\) and \(max-height:820px\)\{[\s\S]*?\.car-rail\{[^}]*top:150px/)
+    expect(styles).toMatch(/@media\(min-width:901px\) and \(max-height:820px\)\{[\s\S]*?\.compare\{--compare-row-height:150px/)
+    expect(styles).toMatch(/@media\(min-width:901px\) and \(max-height:820px\)\{[\s\S]*?\.service-groups\{[^}]*bottom:32px/)
   })
 
   it('联系我们恢复上一版宽度并按人物外扩高度垂直居中', () => {

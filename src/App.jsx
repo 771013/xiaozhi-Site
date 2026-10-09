@@ -125,7 +125,6 @@ function App() {
     })
     const highlight = list.querySelector('.compare-highlight')
     highlight?.style.setProperty('--active-index', String(index))
-    highlight?.style.setProperty('--highlight-y', `${index * 182}px`)
   }
 
   useEffect(() => {
@@ -339,7 +338,7 @@ function App() {
           <div
             className="compare-list"
           >
-            <div className="compare-highlight" aria-hidden="true" style={{ '--active-index': String(activeBenefit), '--highlight-y': `${activeBenefit * 182}px` }}>
+            <div className="compare-highlight" aria-hidden="true" style={{ '--active-index': String(activeBenefit) }}>
               <img className="compare-decoration" src={asset('b9389.png')} alt="" style={{ transform: 'scaleX(-1)' }} />
             </div>
             {compareItems.map((item, index) => (

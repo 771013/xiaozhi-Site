@@ -54,24 +54,33 @@ describe('motion helpers', () => {
     expect(getLoopCarIndex(4 * 276, 10)).toBe(4)
   })
 
-  it('循环车型横向位置保持等速，不因放大补位而停顿', () => {
-    const before = getLoopCarPose(3, 2.8 * 276, 10)
-    const after = getLoopCarPose(3, 2.9 * 276, 10)
+  it('循环车型在缩放补位期间持续向左，不出现停顿或回退', () => {
+    for (const index of [3, 4]) {
+      const positions = [2.7, 2.8, 2.9, 3, 3.1]
+        .map((phase) => getLoopCarPose(index, phase * 276, 10).x)
 
-    expect(before.x - after.x).toBeGreaterThan(27)
-    expect(before.x - after.x).toBeLessThan(31)
+      positions.slice(1).forEach((position, positionIndex) => {
+        expect(position).toBeLessThan(positions[positionIndex])
+      })
+    }
   })
 
-  it('循环车型在放大移动的全过程中至少保留基础间距', () => {
+  it('循环车型在放大移动的全过程中保持固定基础间距', () => {
     for (const phase of [3.5, 3.65, 3.8, 4].map((value) => value * 276)) {
       const focused = getLoopCarPose(4, phase, 10)
       const next = getLoopCarPose(5, phase, 10)
 
-      expect(next.x - (focused.x + 258 * focused.scale)).toBeGreaterThanOrEqual(18)
+      expect(next.x - (focused.x + 258 * focused.scale)).toBeCloseTo(18, 4)
     }
-    const focused = getLoopCarPose(4, 4 * 276, 10)
-    const next = getLoopCarPose(5, 4 * 276, 10)
-    expect(next.x - (focused.x + 258 * focused.scale)).toBeCloseTo(18, 4)
+  })
+
+  it('所有循环车型保持完全不透明，小卡不显示白色描边', () => {
+    const small = getLoopCarPose(6, 3 * 276, 10)
+    const growing = getLoopCarPose(4, 3.75 * 276, 10)
+
+    expect(small.opacity).toBe(1)
+    expect(small.outline).toBe(0)
+    expect(growing.outline).toBe(0)
   })
 
   it('循环车型跨过相邻位置中点后才开始放大并在焦点后缩小', () => {
@@ -101,7 +110,7 @@ describe('motion helpers', () => {
   })
 
   it('循环车型以更紧凑的节奏经过放大焦点', () => {
-    expect(advanceLoopPhase(0, 16)).toBeCloseTo(0.88)
-    expect(advanceLoopPhase(10, 100)).toBeCloseTo(12.2)
+    expect(advanceLoopPhase(0, 16)).toBeCloseTo(1.2672)
+    expect(advanceLoopPhase(10, 100)).toBeCloseTo(13.168)
   })
 })
