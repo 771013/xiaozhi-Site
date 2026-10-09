@@ -141,6 +141,10 @@ describe('小支租车官网交互', () => {
     expect(styles).toMatch(/\.stats\{[^}]*transform:translate\(-8px,-78px\)/)
   })
 
+  it('关于小支的两段介绍整体下移 50px', () => {
+    expect(styles).toMatch(/\.about-copy\{[^}]*transform:translateY\(50px\)/)
+  })
+
   it('联系我们为人物和左右交错文案提供独立揭示且人物入场后保持静止', () => {
     const { container } = render(<App />)
 
@@ -232,8 +236,10 @@ describe('小支租车官网交互', () => {
     expect(styles).toMatch(/@media\(prefers-reduced-motion:reduce\)/)
   })
 
-  it('版块标题揭示不使用会阻断可见性观察的全裁切初始态', () => {
+  it('文字保留位移动效但不再使用透明度或模糊渐显', () => {
     expect(styles).not.toMatch(/\[data-reveal="title"\]\{[^}]*clip-path:inset\(0 0 100% 0\)/)
-    expect(styles).toMatch(/\[data-reveal="title"\]\{[^}]*opacity:0[^}]*filter:blur\(6px\)/)
+    expect(styles).toMatch(/\[data-reveal="title"\]\{[^}]*opacity:1[^}]*filter:none[^}]*transition-property:transform/)
+    expect(styles).toMatch(/\[data-reveal="copy"\]\{[^}]*opacity:1[^}]*filter:none[^}]*transition-property:transform/)
+    expect(styles).toMatch(/\[data-contact-reveal="left"\],\[data-contact-reveal="right"\]\{[^}]*opacity:1[^}]*filter:none[^}]*transition-property:transform/)
   })
 })

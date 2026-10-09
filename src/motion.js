@@ -48,17 +48,22 @@ export function getLoopCarFocusX(viewportWidth, shellWidth = 1200, gutter = 24) 
 }
 
 export function advanceLoopPhase(phase, elapsedMs) {
-  return phase + (Math.min(40, Math.max(0, elapsedMs)) * 0.04)
+  return phase + (Math.min(40, Math.max(0, elapsedMs)) * 0.055)
 }
 
 export function getLoopCarPose(index, phase, count = 10, focusX = 320) {
   const total = LOOP_CARD_STEP * Math.max(1, count)
   const distance = wrapDistance((index * LOOP_CARD_STEP) - phase, total) / LOOP_CARD_STEP
-  const focus = Math.max(0, 1 - Math.abs(distance))
+  const focus = Math.max(0, 1 - (Math.abs(distance) * 2))
   const focusedExtraWidth = LOOP_CARD_WIDTH * 0.55
+  const focusedDistance = distance - Math.round(distance)
+  const focusedAmount = Math.max(0, 1 - (Math.abs(focusedDistance) * 2))
+  const trailingOffset = distance > focusedDistance
+    ? focusedExtraWidth * focusedAmount
+    : 0
 
   return {
-    x: focusX + (distance * LOOP_CARD_STEP) + (clamp(distance, 0, 1) * focusedExtraWidth),
+    x: focusX + (distance * LOOP_CARD_STEP) + trailingOffset,
     scale: 1 + (focus * 0.55),
     opacity: clamp(1 - (Math.abs(distance) * 0.16), 0.38, 1),
     zIndex: Math.max(1, 20 - Math.round(Math.abs(distance) * 3)),

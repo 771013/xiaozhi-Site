@@ -61,6 +61,18 @@ describe('motion helpers', () => {
     expect(next.x - (active.x + 258 * active.scale)).toBeCloseTo(18, 4)
   })
 
+  it('循环车型跨过相邻位置中点后才开始放大并在焦点后缩小', () => {
+    const halfway = getLoopCarPose(4, 3.5 * 276, 10)
+    const approaching = getLoopCarPose(4, 3.75 * 276, 10)
+    const focused = getLoopCarPose(4, 4 * 276, 10)
+    const leaving = getLoopCarPose(4, 4.25 * 276, 10)
+
+    expect(halfway.scale).toBeCloseTo(1)
+    expect(approaching.scale).toBeGreaterThan(halfway.scale)
+    expect(focused.scale).toBeCloseTo(1.55)
+    expect(leaving.scale).toBeCloseTo(approaching.scale)
+  })
+
   it('循环车型焦点落在全宽舞台的版心左边缘', () => {
     expect(getLoopCarFocusX(1440)).toBe(120)
     expect(getLoopCarFocusX(1280)).toBe(40)
@@ -71,7 +83,7 @@ describe('motion helpers', () => {
   })
 
   it('循环车型以更紧凑的节奏经过放大焦点', () => {
-    expect(advanceLoopPhase(0, 16)).toBeCloseTo(0.64)
-    expect(advanceLoopPhase(10, 100)).toBeCloseTo(11.6)
+    expect(advanceLoopPhase(0, 16)).toBeCloseTo(0.88)
+    expect(advanceLoopPhase(10, 100)).toBeCloseTo(12.2)
   })
 })
