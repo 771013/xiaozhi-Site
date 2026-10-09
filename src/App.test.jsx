@@ -53,7 +53,7 @@ describe('小支租车官网交互', () => {
 
   it('小支比价蓝色区域的地球装饰水平镜像', () => {
     const { container } = render(<App />)
-    const decoration = container.querySelector('#compare .compare-row.active .compare-decoration')
+    const decoration = container.querySelector('#compare .compare-decoration')
 
     expect(decoration).toHaveStyle({ transform: 'scaleX(-1)' })
   })
@@ -110,5 +110,35 @@ describe('小支租车官网交互', () => {
       '宽适从容，体面出行',
       '一路皆景，自在安居',
     ].forEach((copy) => expect(screen.getByText(copy)).toBeInTheDocument())
+  })
+
+  it('比价高亮默认在安心护航，悬停项目时平滑切换并在离开后复位', () => {
+    const { container } = render(<App />)
+    const list = container.querySelector('#compare .compare-list')
+    const rows = [...container.querySelectorAll('#compare .compare-row')]
+    const highlight = container.querySelector('#compare .compare-highlight')
+
+    expect(rows[1]).toHaveClass('active')
+    expect(highlight.style.getPropertyValue('--active-index')).toBe('1')
+
+    fireEvent.mouseEnter(rows[0])
+    expect(rows[0]).toHaveClass('active')
+    expect(highlight.style.getPropertyValue('--active-index')).toBe('0')
+
+    fireEvent.mouseLeave(list)
+    expect(rows[1]).toHaveClass('active')
+    expect(highlight.style.getPropertyValue('--active-index')).toBe('1')
+  })
+
+  it('比价项目支持键盘焦点切换，焦点离开列表后恢复默认项', () => {
+    const { container } = render(<App />)
+    const list = container.querySelector('#compare .compare-list')
+    const rows = [...container.querySelectorAll('#compare .compare-row')]
+
+    fireEvent.focus(rows[2])
+    expect(rows[2]).toHaveClass('active')
+
+    fireEvent.blur(list, { relatedTarget: document.body })
+    expect(rows[1]).toHaveClass('active')
   })
 })

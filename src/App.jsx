@@ -20,9 +20,9 @@ const carCards = [
 ]
 
 const compareItems = [
-  { title: '全网低价', copy: '聚合多家租车服务商报价，同一车型一键横向比价，自动为你标出性价比更优的方案。', icon: '0265e.svg' },
-  { title: '安心护航', copy: '平台担保交易，芝麻信用免押金，订单全流程可查可追溯，用车更有底气。', icon: 'b35c9.svg' },
-  { title: '费用清晰', copy: '租金、保障、服务费逐项列明，下单前一目了然，不藏隐形收费。', icon: '5d01d.svg' },
+  { title: '全网低价', copy: '聚合多家租车服务商报价，同一车型一键横向比价，自动为你标出性价比更优的方案。', icon: '0265e.svg', activeIcon: 'compare-price-active.svg' },
+  { title: '安心护航', copy: '平台担保交易，芝麻信用免押金，订单全流程可查可追溯，用车更有底气。', icon: 'compare-shield-inactive.svg', activeIcon: 'b35c9.svg' },
+  { title: '费用清晰', copy: '租金、保障、服务费逐项列明，下单前一目了然，不藏隐形收费。', icon: '5d01d.svg', activeIcon: 'compare-list-active.svg' },
 ]
 
 const serviceGroups = [
@@ -93,6 +93,7 @@ function App() {
   const [dialogOpen, setDialogOpen] = useState(false)
   const [headerScrolled, setHeaderScrolled] = useState(() => window.scrollY >= 24)
   const [activeCar, setActiveCar] = useState(0)
+  const [activeBenefit, setActiveBenefit] = useState(1)
   const compareButtonRef = useRef(null)
   const carsSectionRef = useRef(null)
   const carRefs = useRef([])
@@ -301,16 +302,33 @@ function App() {
             <h2>小支比价</h2>
             <p>透明价格 比出超高性价比</p>
           </div>
-          <div className="compare-list" data-reveal="copy" style={{ '--reveal-delay': '120ms' }}>
+          <div
+            className="compare-list"
+            data-reveal="copy"
+            style={{ '--reveal-delay': '120ms' }}
+            onMouseLeave={() => setActiveBenefit(1)}
+            onBlur={(event) => {
+              if (!event.currentTarget.contains(event.relatedTarget)) setActiveBenefit(1)
+            }}
+          >
+            <div className="compare-highlight" aria-hidden="true" style={{ '--active-index': String(activeBenefit), '--highlight-y': `${activeBenefit * 182}px` }}>
+              <img className="compare-decoration" src={asset('b9389.png')} alt="" style={{ transform: 'scaleX(-1)' }} />
+            </div>
             {compareItems.map((item, index) => (
               <article
-                className={`compare-row ${index === 1 ? 'active' : ''}`}
+                className={`compare-row ${index === activeBenefit ? 'active' : ''}`}
                 key={item.title}
+                tabIndex="0"
+                aria-current={index === activeBenefit ? 'true' : undefined}
+                onMouseEnter={() => setActiveBenefit(index)}
+                onFocus={() => setActiveBenefit(index)}
               >
-                <span className="compare-icon"><img src={asset(item.icon)} alt="" /></span>
+                <span className="compare-icon">
+                  <img className="compare-icon-inactive" src={asset(item.icon)} alt="" />
+                  <img className="compare-icon-active" src={asset(item.activeIcon)} alt="" />
+                </span>
                 <strong>{item.title}</strong>
                 <span className="compare-description">{item.copy}</span>
-                {index === 1 && <img className="compare-decoration" src={asset('b9389.png')} alt="" style={{ transform: 'scaleX(-1)' }} />}
               </article>
             ))}
           </div>
