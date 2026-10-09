@@ -54,22 +54,40 @@ describe('motion helpers', () => {
     expect(getLoopCarIndex(4 * 276, 10)).toBe(4)
   })
 
-  it('循环车型焦点右侧保留放大卡片后的间距', () => {
-    const active = getLoopCarPose(3, 3 * 276, 10)
-    const next = getLoopCarPose(4, 3 * 276, 10)
+  it('循环车型横向位置保持等速，不因放大补位而停顿', () => {
+    const before = getLoopCarPose(3, 2.8 * 276, 10)
+    const after = getLoopCarPose(3, 2.9 * 276, 10)
 
-    expect(next.x - (active.x + 258 * active.scale)).toBeCloseTo(18, 4)
+    expect(before.x - after.x).toBeGreaterThan(27)
+    expect(before.x - after.x).toBeLessThan(31)
+  })
+
+  it('循环车型在放大移动的全过程中至少保留基础间距', () => {
+    for (const phase of [3.5, 3.65, 3.8, 4].map((value) => value * 276)) {
+      const focused = getLoopCarPose(4, phase, 10)
+      const next = getLoopCarPose(5, phase, 10)
+
+      expect(next.x - (focused.x + 258 * focused.scale)).toBeGreaterThanOrEqual(18)
+    }
+    const focused = getLoopCarPose(4, 4 * 276, 10)
+    const next = getLoopCarPose(5, 4 * 276, 10)
+    expect(next.x - (focused.x + 258 * focused.scale)).toBeCloseTo(18, 4)
   })
 
   it('循环车型跨过相邻位置中点后才开始放大并在焦点后缩小', () => {
     const halfway = getLoopCarPose(4, 3.5 * 276, 10)
+    const outsideShortWindow = getLoopCarPose(4, 3.55 * 276, 10)
     const approaching = getLoopCarPose(4, 3.75 * 276, 10)
     const focused = getLoopCarPose(4, 4 * 276, 10)
     const leaving = getLoopCarPose(4, 4.25 * 276, 10)
 
     expect(halfway.scale).toBeCloseTo(1)
+    expect(outsideShortWindow.scale).toBeCloseTo(1)
     expect(approaching.scale).toBeGreaterThan(halfway.scale)
     expect(focused.scale).toBeCloseTo(1.55)
+    expect(focused.focus).toBeCloseTo(1)
+    expect(focused.outline).toBeCloseTo(1)
+    expect(approaching.outline).toBe(0)
     expect(leaving.scale).toBeCloseTo(approaching.scale)
   })
 
@@ -79,7 +97,7 @@ describe('motion helpers', () => {
     expect(getLoopCarFocusX(1024)).toBe(24)
 
     const focused = getLoopCarPose(3, 3 * 276, 10, getLoopCarFocusX(1440))
-    expect(focused.x).toBe(120)
+    expect(focused.x).toBeCloseTo(120, 4)
   })
 
   it('循环车型以更紧凑的节奏经过放大焦点', () => {

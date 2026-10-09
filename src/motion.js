@@ -38,6 +38,9 @@ export function getCarPose(index, progress, count = 5) {
 const LOOP_CARD_WIDTH = 258
 const LOOP_CARD_GAP = 18
 const LOOP_CARD_STEP = LOOP_CARD_WIDTH + LOOP_CARD_GAP
+const LOOP_FOCUS_RANGE = 0.4
+const LOOP_SPACING_RANGE = 0.5
+const LOOP_LEADING_SPACE_SHARE = 0.05
 
 function wrapDistance(value, range) {
   return ((((value + (range / 2)) % range) + range) % range) - (range / 2)
@@ -54,17 +57,23 @@ export function advanceLoopPhase(phase, elapsedMs) {
 export function getLoopCarPose(index, phase, count = 10, focusX = 320) {
   const total = LOOP_CARD_STEP * Math.max(1, count)
   const distance = wrapDistance((index * LOOP_CARD_STEP) - phase, total) / LOOP_CARD_STEP
-  const focus = Math.max(0, 1 - (Math.abs(distance) * 2))
-  const focusedExtraWidth = LOOP_CARD_WIDTH * 0.55
+  const focusProgress = clamp(1 - (Math.abs(distance) / LOOP_FOCUS_RANGE), 0, 1)
+  const focus = focusProgress
   const focusedDistance = distance - Math.round(distance)
-  const focusedAmount = Math.max(0, 1 - (Math.abs(focusedDistance) * 2))
-  const trailingOffset = distance > focusedDistance
-    ? focusedExtraWidth * focusedAmount
-    : 0
+  const focusedProgress = clamp(1 - (Math.abs(focusedDistance) / LOOP_SPACING_RANGE), 0, 1)
+  const focusedAmount = focusedProgress
+  const focusedExtraWidth = LOOP_CARD_WIDTH * 0.55
+  const reservedWidth = focusedExtraWidth * focusedAmount
+  const leadingOffset = -reservedWidth * LOOP_LEADING_SPACE_SHARE
+  const trailingOffset = reservedWidth * (1 - LOOP_LEADING_SPACE_SHARE)
+  const focusCompensation = focusedExtraWidth * LOOP_LEADING_SPACE_SHARE
+  const spacingOffset = distance > focusedDistance ? trailingOffset : leadingOffset
 
   return {
-    x: focusX + (distance * LOOP_CARD_STEP) + trailingOffset,
+    x: focusX + focusCompensation + (distance * LOOP_CARD_STEP) + spacingOffset,
     scale: 1 + (focus * 0.55),
+    focus,
+    outline: clamp((focus - 0.72) / 0.28, 0, 1),
     opacity: clamp(1 - (Math.abs(distance) * 0.16), 0.38, 1),
     zIndex: Math.max(1, 20 - Math.round(Math.abs(distance) * 3)),
   }

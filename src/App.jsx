@@ -115,6 +115,19 @@ function App() {
   const carRefs = useRef([])
   const activeCarRef = useRef(0)
 
+  const activateBenefit = (index, row) => {
+    const list = row.closest('.compare-list')
+    if (!list) return
+    list.querySelectorAll('.compare-row').forEach((item, itemIndex) => {
+      item.classList.toggle('active', itemIndex === index)
+      if (itemIndex === index) item.setAttribute('aria-current', 'true')
+      else item.removeAttribute('aria-current')
+    })
+    const highlight = list.querySelector('.compare-highlight')
+    highlight?.style.setProperty('--active-index', String(index))
+    highlight?.style.setProperty('--highlight-y', `${index * 182}px`)
+  }
+
   useEffect(() => {
     const updateHeader = () => setHeaderScrolled(window.scrollY >= 24)
     updateHeader()
@@ -143,6 +156,8 @@ function App() {
           card.style.transform = ''
           card.style.opacity = ''
           card.style.zIndex = ''
+          card.style.removeProperty('--car-focus')
+          card.style.removeProperty('--car-outline')
         })
         return
       }
@@ -159,6 +174,8 @@ function App() {
         card.style.transform = `translate3d(${pose.x}px,0,0) scale(${pose.scale})`
         card.style.opacity = String(pose.opacity)
         card.style.zIndex = String(pose.zIndex)
+        card.style.setProperty('--car-focus', pose.focus.toFixed(4))
+        card.style.setProperty('--car-outline', pose.outline.toFixed(4))
       })
 
       const nextActive = getLoopCarIndex(phase, carCards.length)
@@ -306,7 +323,7 @@ function App() {
                 aria-current={index === activeCar ? 'true' : undefined}
               >
                 <img src={asset(car.image)} alt="" />
-                <span className="car-caption"><strong>{car.title}</strong>{index === activeCar && <small>{car.copy}</small>}</span>
+                <span className="car-caption"><strong>{car.title}</strong><small>{car.copy}</small></span>
               </article>
             ))}
           </div>
@@ -331,6 +348,7 @@ function App() {
                 key={item.title}
                 data-reveal="copy"
                 style={{ '--reveal-delay': `${100 + index * 120}ms` }}
+                onMouseEnter={(event) => activateBenefit(index, event.currentTarget)}
                 aria-current={index === activeBenefit ? 'true' : undefined}
               >
                 <span className="compare-icon">

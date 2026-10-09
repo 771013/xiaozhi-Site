@@ -118,14 +118,15 @@ describe('小支租车官网交互', () => {
     expect(container.querySelector('[data-reveal]')).toHaveClass('is-visible')
   })
 
-  it('十种车型按 Figma 分类循环展示，只有焦点卡显示场景文案', () => {
+  it('十种车型按 Figma 分类循环展示，场景文案由连续焦点值控制显隐', () => {
     render(<App />)
 
     ;['舒适型', '经济型', 'SUV', '豪华型', '新能源', '跑车', '商务车', '房车', '小巴士', '皮卡']
       .forEach((title) => expect(screen.getByLabelText(title)).toBeInTheDocument())
     expect(document.querySelectorAll('#cars .car-card')).toHaveLength(10)
-    expect(document.querySelector('#cars .car-card.featured .car-caption small')).toBeInTheDocument()
-    expect(document.querySelectorAll('#cars .car-card:not(.featured) .car-caption small')).toHaveLength(0)
+    expect(document.querySelectorAll('#cars .car-card .car-caption small')).toHaveLength(10)
+    expect(styles).toMatch(/\.car-caption small\{[^}]*opacity:var\(--car-focus\)[^}]*transform:/)
+    expect(styles).toMatch(/\.car-card::after\{[^}]*opacity:var\(--car-outline\)[^}]*transition:opacity/)
   })
 
   it('车型轨道脱离版心容器并直接铺满舞台宽度', () => {
@@ -151,7 +152,7 @@ describe('小支租车官网交互', () => {
     expect(container.querySelector('#contact [data-contact-reveal="mascot"] .contact-mascot')).toBeInTheDocument()
     expect(container.querySelectorAll('#contact [data-contact-reveal="left"]')).toHaveLength(2)
     expect(container.querySelectorAll('#contact [data-contact-reveal="right"]')).toHaveLength(2)
-    expect(styles).toMatch(/\[data-contact-reveal="mascot"\]\{[^}]*opacity:1[^}]*filter:blur\(8px\)/)
+    expect(styles).toMatch(/\[data-contact-reveal="mascot"\]\{[^}]*filter:none/)
     expect(styles).not.toMatch(/contactMascotFloat/)
     expect(styles).not.toMatch(/\.contact-mascot-wrap\.is-visible \.contact-mascot\{[^}]*animation:/)
   })
@@ -168,7 +169,7 @@ describe('小支租车官网交互', () => {
     expect(styles).toMatch(/\.contact\{[^}]*border-radius:0/)
   })
 
-  it('比价高亮固定在安心护航，鼠标悬停不再切换', () => {
+  it('比价高亮默认位于安心护航并跟随鼠标悬停切换', () => {
     const { container } = render(<App />)
     const list = container.querySelector('#compare .compare-list')
     const rows = [...container.querySelectorAll('#compare .compare-row')]
@@ -178,12 +179,12 @@ describe('小支租车官网交互', () => {
     expect(highlight.style.getPropertyValue('--active-index')).toBe('1')
 
     fireEvent.mouseEnter(rows[0])
-    expect(rows[1]).toHaveClass('active')
-    expect(highlight.style.getPropertyValue('--active-index')).toBe('1')
+    expect(rows[0]).toHaveClass('active')
+    expect(highlight.style.getPropertyValue('--active-index')).toBe('0')
 
     fireEvent.mouseLeave(list)
-    expect(rows[1]).toHaveClass('active')
-    expect(highlight.style.getPropertyValue('--active-index')).toBe('1')
+    expect(rows[0]).toHaveClass('active')
+    expect(highlight.style.getPropertyValue('--active-index')).toBe('0')
   })
 
   it('比价项目不再提供可聚焦的切换状态', () => {
@@ -236,10 +237,12 @@ describe('小支租车官网交互', () => {
     expect(styles).toMatch(/@media\(prefers-reduced-motion:reduce\)/)
   })
 
-  it('文字保留位移动效但不再使用透明度或模糊渐显', () => {
+  it('文字保留透明度与位移动效但不再使用模糊渐显', () => {
     expect(styles).not.toMatch(/\[data-reveal="title"\]\{[^}]*clip-path:inset\(0 0 100% 0\)/)
-    expect(styles).toMatch(/\[data-reveal="title"\]\{[^}]*opacity:1[^}]*filter:none[^}]*transition-property:transform/)
-    expect(styles).toMatch(/\[data-reveal="copy"\]\{[^}]*opacity:1[^}]*filter:none[^}]*transition-property:transform/)
-    expect(styles).toMatch(/\[data-contact-reveal="left"\],\[data-contact-reveal="right"\]\{[^}]*opacity:1[^}]*filter:none[^}]*transition-property:transform/)
+    expect(styles).toMatch(/\[data-reveal\]\{[^}]*opacity:0[^}]*filter:none[^}]*transition:opacity/)
+    expect(styles).not.toMatch(/\[data-reveal\]\{[^}]*filter:blur\(/)
+    expect(styles).not.toMatch(/\[data-contact-reveal\]\{[^}]*filter:blur\(/)
+    expect(styles).not.toMatch(/\[data-contact-reveal="mascot"\]\{[^}]*filter:blur\(/)
+    expect(styles).toMatch(/\[data-contact-reveal\]\{[^}]*opacity:0[^}]*filter:none[^}]*transition:opacity/)
   })
 })
