@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { asset } from './assets.js'
+import { prefersReducedMotion, useCountUp } from './motion.js'
 
 const navItems = [
   ['首页', 'home'],
@@ -54,6 +55,11 @@ function scrollToSection(id) {
   document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
 }
 
+function CountUp({ target }) {
+  const valueRef = useCountUp(target)
+  return <span ref={valueRef} data-count={target}>0</span>
+}
+
 function MiniProgramDialog({ onClose, returnFocusRef }) {
   const closeButton = useRef(null)
 
@@ -97,6 +103,7 @@ function App() {
   }, [])
 
   useEffect(() => {
+    if (typeof IntersectionObserver !== 'function') return undefined
     const observer = new IntersectionObserver(
       (entries) => {
         const visible = entries
@@ -111,6 +118,27 @@ function App() {
       const section = document.getElementById(id)
       if (section) observer.observe(section)
     })
+    return () => observer.disconnect()
+  }, [])
+
+  useEffect(() => {
+    const revealNodes = [...document.querySelectorAll('[data-reveal]')]
+    const revealAll = () => revealNodes.forEach((node) => node.classList.add('is-visible'))
+
+    if (prefersReducedMotion() || typeof IntersectionObserver !== 'function') {
+      revealAll()
+      return undefined
+    }
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting) return
+        entry.target.classList.add('is-visible')
+        observer.unobserve?.(entry.target)
+      })
+    }, { rootMargin: '0px 0px -12%', threshold: 0.12 })
+
+    revealNodes.forEach((node) => observer.observe(node))
     return () => observer.disconnect()
   }, [])
 
@@ -139,7 +167,7 @@ function App() {
         </header>
 
         <div className="hero-content shell">
-          <div className="hero-copy">
+          <div className="hero-copy" data-reveal="copy">
             <span className="eyebrow">聚合多家服务商 · 同车型智能比价</span>
             <h1>小支租车</h1>
             <h2>比出好价格 租得更放心</h2>
@@ -151,6 +179,7 @@ function App() {
           </div>
           <img
             className="hero-visual"
+            data-reveal="image"
             src={asset('661cc.png')}
             alt="小支租车小程序界面和蓝色跑车"
           />
@@ -159,25 +188,25 @@ function App() {
 
       <section className="about" id="about">
         <div className="shell about-grid">
-          <div className="about-copy">
+          <div className="about-copy" data-reveal="copy">
             <p className="section-kicker">覆盖多元车型与海量车源，服务全国出行需求</p>
             <p>小支租车是为用户提供在线汽车租赁服务的出行平台，聚合多家租车服务商的车辆资源与报价，通过比价能力帮助用户在同一车型下选出性价比更优的租车方案。小支租车支持自行到店取还车、送车上门、上门取车等多种交车方式，满足用户多场景的四轮自助出行需求，同时提供芝麻信用免押、平台担保交易、免费取消、知心租保障等多种安全可靠便捷的交易方式。用户可在应用内完成从选车、比价、下单、支付到订单查询的完整租车流程，并可实时查看服务商的服务信息，获得服务可视化的使用体验。</p>
           </div>
-          <div className="scale-heading">
+          <div className="scale-heading" data-reveal="title">
             <h2>业务规模</h2>
             <span>Business scale</span>
           </div>
           <div className="stats">
-            <article><strong>50000<small>+</small></strong><h3>车型</h3><p>覆盖经济型到豪华型全系</p></article>
-            <article><strong>70000<small>+</small></strong><h3>取车网点</h3><p>全国机场 / 火车站 / 市区门店</p></article>
-            <article className="highlight"><strong>800000<small>+</small></strong><h3>车源</h3><p>聚合多家服务商车辆资源</p></article>
+            <article data-reveal="card" style={{ '--reveal-delay': '80ms' }}><strong><CountUp target={50000} /><small>+</small></strong><h3>车型</h3><p>覆盖经济型到豪华型全系</p></article>
+            <article data-reveal="card" style={{ '--reveal-delay': '180ms' }}><strong><CountUp target={70000} /><small>+</small></strong><h3>取车网点</h3><p>全国机场 / 火车站 / 市区门店</p></article>
+            <article className="highlight" data-reveal="card" style={{ '--reveal-delay': '280ms' }}><strong><CountUp target={800000} /><small>+</small></strong><h3>车源</h3><p>聚合多家服务商车辆资源</p></article>
           </div>
         </div>
       </section>
 
       <section className="cars" id="cars" style={{ backgroundImage: `linear-gradient(rgba(0,0,0,.6),rgba(0,0,0,.6)),url(${asset('acb79.png')})` }}>
         <div className="shell cars-content">
-          <div className="section-title light align-right">
+          <div className="section-title light align-right" data-reveal="title">
             <h2>车型介绍</h2>
             <p>多样车型选择，满足不同出行场景</p>
           </div>
@@ -198,11 +227,11 @@ function App() {
 
       <section className="compare" id="compare">
         <div className="shell compare-inner">
-          <div className="section-title">
+          <div className="section-title" data-reveal="title">
             <h2>小支比价</h2>
             <p>透明价格 比出超高性价比</p>
           </div>
-          <div className="compare-list">
+          <div className="compare-list" data-reveal="copy" style={{ '--reveal-delay': '120ms' }}>
             {compareItems.map((item, index) => (
               <article
                 className={`compare-row ${index === 1 ? 'active' : ''}`}
@@ -220,11 +249,11 @@ function App() {
 
       <section className="service" id="service" style={{ backgroundImage: `linear-gradient(rgba(0,0,0,.5),rgba(0,0,0,.5)),url(${asset('fa5ca.png')})` }}>
         <div className="shell service-inner">
-          <div className="section-title light">
+          <div className="section-title light" data-reveal="title">
             <h2>知心租</h2>
             <p>订取用还 全程保障</p>
           </div>
-          <div className="service-groups">
+          <div className="service-groups" data-reveal="copy" style={{ '--reveal-delay': '140ms' }}>
             {serviceGroups.map((group, groupIndex) => (
               <article className={`service-group service-group-${groupIndex}`} key={group.title}>
                 <h3>{group.title}</h3>

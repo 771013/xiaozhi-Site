@@ -19,6 +19,7 @@ describe('小支租车官网交互', () => {
   afterEach(() => {
     cleanup()
     vi.unstubAllGlobals()
+    Object.defineProperty(window, 'scrollY', { configurable: true, writable: true, value: 0 })
   })
 
   it('车型介绍和小支比价保持静态展示，不提供卡片点击切换', () => {
@@ -75,5 +76,27 @@ describe('小支租车官网交互', () => {
     expect(screen.getByRole('heading', { name: '比出好价格 租得更放心' })).toBeInTheDocument()
     expect(screen.getByText('透明价格 比出超高性价比')).toBeInTheDocument()
     expect(screen.getByText('订取用还 全程保障')).toBeInTheDocument()
+  })
+
+  it('观察器不可用时直接展示最终数据与内容', () => {
+    vi.stubGlobal('IntersectionObserver', undefined)
+    const { container } = render(<App />)
+
+    expect(container.querySelector('[data-count="50000"]')).toHaveTextContent('50000')
+    expect(container.querySelector('[data-count="70000"]')).toHaveTextContent('70000')
+    expect(container.querySelector('[data-count="800000"]')).toHaveTextContent('800000')
+    expect(container.querySelector('[data-reveal]')).toHaveClass('is-visible')
+  })
+
+  it('系统减少动态效果时不等待观察器并直接展示最终数据', () => {
+    vi.stubGlobal('matchMedia', vi.fn(() => ({
+      matches: true,
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+    })))
+    const { container } = render(<App />)
+
+    expect(container.querySelector('[data-count="50000"]')).toHaveTextContent('50000')
+    expect(container.querySelector('[data-reveal]')).toHaveClass('is-visible')
   })
 })
