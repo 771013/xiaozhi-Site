@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { clamp, countAtProgress, easeOutQuart, getActiveCarIndex, getCarPose } from './motion.js'
+import { clamp, countAtProgress, easeOutQuart, getActiveCarIndex, getCarPose, getLoopCarPose, getLoopCarIndex } from './motion.js'
 
 describe('motion helpers', () => {
   it('clamps values to the supplied range', () => {
@@ -30,7 +30,34 @@ describe('motion helpers', () => {
 
     expect(firstDirection.scale).toBe(reverseDirection.scale)
     expect(firstDirection.opacity).toBe(reverseDirection.opacity)
-    expect(firstDirection.x).toBe(20)
+    expect(firstDirection.x).toBe(0)
     expect(getCarPose(0, 1).x).toBeLessThan(0)
+  })
+
+  it('reserves space for the enlarged vehicle so adjacent cards do not stack', () => {
+    const focused = getCarPose(0, 0)
+    const next = getCarPose(1, 0)
+    const following = getCarPose(2, 0)
+    const focusedWidth = 258 * focused.scale
+
+    expect(next.x - (focused.x + focusedWidth)).toBeCloseTo(18)
+    expect(following.x - next.x).toBeCloseTo(276)
+  })
+
+  it('循环车型在相位跨过一轮后保持相同位置并切换焦点', () => {
+    const first = getLoopCarPose(3, 3 * 276, 10)
+    const wrapped = getLoopCarPose(3, 3 * 276 + (10 * 276), 10)
+
+    expect(wrapped.x).toBeCloseTo(first.x, 4)
+    expect(wrapped.scale).toBeCloseTo(first.scale, 4)
+    expect(getLoopCarIndex(3 * 276, 10)).toBe(3)
+    expect(getLoopCarIndex(4 * 276, 10)).toBe(4)
+  })
+
+  it('循环车型焦点右侧保留放大卡片后的间距', () => {
+    const active = getLoopCarPose(3, 3 * 276, 10)
+    const next = getLoopCarPose(4, 3 * 276, 10)
+
+    expect(next.x - (active.x + 258 * active.scale)).toBeCloseTo(18, 4)
   })
 })

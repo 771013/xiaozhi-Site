@@ -7,6 +7,7 @@ const localAssets = {
   '231fa.svg': '042d5.svg',
   '742af.svg': '907dd.svg',
   '661cc.png': 'hero-visual.png',
+  'bd5f5.png': 'hero-visual-figma4.png',
   '0265e.svg': 'compare-price-icon.svg',
   'b35c9.svg': 'compare-shield-icon.svg',
   '5d01d.svg': 'compare-list-icon.svg',

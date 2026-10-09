@@ -22,13 +22,45 @@ export function getCarPose(index, progress, count = 5) {
   const stage = clamp(progress, 0, 1) * (count - 1)
   const distance = index - stage
   const focus = Math.max(0, 1 - Math.abs(distance))
+  const cardWidth = 258
+  const cardGap = 18
+  const focusedExtraWidth = cardWidth * 0.55
+  const trailingOffset = clamp(distance, 0, 1) * focusedExtraWidth
 
   return {
-    x: 20 + (distance * 278),
+    x: (distance * (cardWidth + cardGap)) + trailingOffset,
     scale: 1 + (focus * 0.55),
     opacity: clamp(1 - (Math.abs(distance) * 0.16), 0.38, 1),
     zIndex: Math.max(1, 20 - Math.round(Math.abs(distance) * 3)),
   }
+}
+
+const LOOP_CARD_WIDTH = 258
+const LOOP_CARD_GAP = 18
+const LOOP_CARD_STEP = LOOP_CARD_WIDTH + LOOP_CARD_GAP
+const LOOP_FOCUS_X = 320
+
+function wrapDistance(value, range) {
+  return ((((value + (range / 2)) % range) + range) % range) - (range / 2)
+}
+
+export function getLoopCarPose(index, phase, count = 10) {
+  const total = LOOP_CARD_STEP * Math.max(1, count)
+  const distance = wrapDistance((index * LOOP_CARD_STEP) - phase, total) / LOOP_CARD_STEP
+  const focus = Math.max(0, 1 - Math.abs(distance))
+  const focusedExtraWidth = LOOP_CARD_WIDTH * 0.55
+
+  return {
+    x: LOOP_FOCUS_X + (distance * LOOP_CARD_STEP) + (clamp(distance, 0, 1) * focusedExtraWidth),
+    scale: 1 + (focus * 0.55),
+    opacity: clamp(1 - (Math.abs(distance) * 0.16), 0.38, 1),
+    zIndex: Math.max(1, 20 - Math.round(Math.abs(distance) * 3)),
+  }
+}
+
+export function getLoopCarIndex(phase, count = 10) {
+  const size = Math.max(1, count)
+  return ((Math.round(phase / LOOP_CARD_STEP) % size) + size) % size
 }
 
 export function prefersReducedMotion() {

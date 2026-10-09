@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { asset } from './assets.js'
-import { clamp, getActiveCarIndex, getCarPose, prefersReducedMotion, useCountUp } from './motion.js'
+import { getLoopCarIndex, getLoopCarPose, prefersReducedMotion, useCountUp } from './motion.js'
 
 const navItems = [
   ['首页', 'home'],
@@ -12,11 +12,16 @@ const navItems = [
 ]
 
 const carCards = [
-  { title: '豪华型', copy: '格调出众，尊享体验', image: '0fdb6.png' },
-  { title: '新能源', copy: '安静高效，低碳智行', image: 'f1fcb.png' },
-  { title: '跑车', copy: '驾控随心，释放激情', image: '4b2e0.png' },
-  { title: '商务车', copy: '宽适从容，体面出行', image: '54d20.png' },
-  { title: '房车', copy: '一路皆景，自在安居', image: 'd4595.png' },
+  { title: '舒适型', copy: '宽适均衡，轻松出行', image: 'car-comfort.png' },
+  { title: '经济型', copy: '省心实用，灵活代步', image: 'car-economy.png' },
+  { title: 'SUV', copy: '视野开阔，稳健随行', image: 'car-suv.png' },
+  { title: '豪华型', copy: '格调出众，尊享体验', image: 'car-luxury.png' },
+  { title: '新能源', copy: '安静高效，低碳智行', image: 'car-ev.png' },
+  { title: '跑车', copy: '驾控随心，释放激情', image: 'car-sport.png' },
+  { title: '商务车', copy: '宽适从容，体面出行', image: 'car-business.png' },
+  { title: '房车', copy: '一路皆景，自在安居', image: 'car-rv.png' },
+  { title: '小巴士', copy: '多人同行，从容装载', image: 'car-minibus.png' },
+  { title: '皮卡', copy: '强悍多用，纵横随行', image: 'car-pickup.png' },
 ]
 
 const compareItems = [
@@ -92,7 +97,7 @@ function App() {
   const [menuOpen, setMenuOpen] = useState(false)
   const [dialogOpen, setDialogOpen] = useState(false)
   const [headerScrolled, setHeaderScrolled] = useState(() => window.scrollY >= 24)
-  const [activeCar, setActiveCar] = useState(0)
+  const [activeCar, setActiveCar] = useState(3)
   const [activeBenefit, setActiveBenefit] = useState(1)
   const compareButtonRef = useRef(null)
   const carsSectionRef = useRef(null)
@@ -110,14 +115,14 @@ function App() {
     const media = window.matchMedia?.('(min-width: 901px)')
     const motionDisabled = prefersReducedMotion()
     let frame = 0
+    let lastTime = 0
+    let phase = 3 * 276
 
-    const renderCars = () => {
+    const renderCars = (time = performance.now()) => {
       frame = 0
       const section = carsSectionRef.current
       if (!section) return
-      const sectionRect = section.getBoundingClientRect()
-
-      if (sectionRect.top < window.innerHeight * 0.82) {
+      if (section.getBoundingClientRect().top < window.innerHeight * 0.82) {
         section.querySelector('[data-reveal]')?.classList.add('is-visible')
       }
 
@@ -131,38 +136,38 @@ function App() {
         return
       }
 
-      const scrollDistance = Math.max(1, section.offsetHeight - window.innerHeight)
-      const progress = clamp(-sectionRect.top / scrollDistance, 0, 1)
+      if (!motionDisabled) {
+        if (!lastTime) lastTime = time
+        phase += Math.min(40, Math.max(0, time - lastTime)) * 0.028
+        lastTime = time
+      }
+
       carRefs.current.forEach((card, index) => {
         if (!card) return
-        const pose = getCarPose(index, progress, carCards.length)
+        const pose = getLoopCarPose(index, phase, carCards.length)
         card.style.transform = `translate3d(${pose.x}px,0,0) scale(${pose.scale})`
         card.style.opacity = String(pose.opacity)
         card.style.zIndex = String(pose.zIndex)
       })
 
-      const nextActive = getActiveCarIndex(progress, carCards.length)
+      const nextActive = getLoopCarIndex(phase, carCards.length)
       if (nextActive !== activeCarRef.current) {
         activeCarRef.current = nextActive
         setActiveCar(nextActive)
       }
+
+      if (!motionDisabled) frame = requestAnimationFrame(renderCars)
     }
 
     const scheduleRender = () => {
       if (!frame) frame = requestAnimationFrame(renderCars)
     }
 
-    if (motionDisabled) {
-      renderCars()
-      return undefined
-    }
-
-    scheduleRender()
-    window.addEventListener('scroll', scheduleRender, { passive: true })
+    renderCars()
+    if (motionDisabled) return undefined
     window.addEventListener('resize', scheduleRender)
     media?.addEventListener?.('change', scheduleRender)
     return () => {
-      window.removeEventListener('scroll', scheduleRender)
       window.removeEventListener('resize', scheduleRender)
       media?.removeEventListener?.('change', scheduleRender)
       if (frame) cancelAnimationFrame(frame)
@@ -240,14 +245,14 @@ function App() {
             <h2>比出好价格 租得更放心</h2>
             <p>在线汽车租赁服务平台 — 到店取还、送车上门、上门取车多种交车方式，<br className="desktop-only" />芝麻信用免押、平台担保交易、免费取消、知心租保障，全流程自助省心。</p>
             <div className="hero-actions">
-              <button className="button primary" ref={compareButtonRef} onClick={() => setDialogOpen(true)}>立即去比价 <img src={asset('231fa.svg')} alt="" /></button>
-              <button className="button ghost" onClick={() => navigate('service')}>了解知心租 <img src={asset('742af.svg')} alt="" /></button>
+              <button className="button primary" ref={compareButtonRef} onClick={() => setDialogOpen(true)}>立即去比价</button>
+              <button className="button ghost" onClick={() => navigate('service')}>了解知心租</button>
             </div>
           </div>
           <img
             className="hero-visual"
             data-reveal="image"
-            src={asset('661cc.png')}
+            src={asset('bd5f5.png')}
             alt="小支租车小程序界面和蓝色跑车"
           />
         </div>
@@ -278,17 +283,17 @@ function App() {
               <h2>车型介绍</h2>
               <p>多样车型选择，满足不同出行场景</p>
             </div>
-            <div className="car-rail">
-              <div className="car-card teaser" aria-hidden="true"><img src={asset('07bb9.png')} alt="" /></div>
+            <div className="car-rail" aria-label="车型循环展示">
               {carCards.map((car, index) => (
                 <article
                   className={`car-card ${index === activeCar ? 'featured' : ''}`}
                   key={`${car.title}-${car.image}`}
                   ref={(node) => { carRefs.current[index] = node }}
+                  aria-label={car.title}
                   aria-current={index === activeCar ? 'true' : undefined}
                 >
                   <img src={asset(car.image)} alt="" />
-                  <span className="car-caption"><strong>{car.title}</strong><small>{car.copy}</small></span>
+                  <span className="car-caption"><strong>{car.title}</strong>{index === activeCar && <small>{car.copy}</small>}</span>
                 </article>
               ))}
             </div>

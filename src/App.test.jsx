@@ -54,6 +54,18 @@ describe('小支租车官网交互', () => {
     expect(container.querySelector('.site-header .brand-mark')).not.toBeInTheDocument()
   })
 
+  it('首屏使用小支官网4的新主视觉和无箭头胶囊按钮', () => {
+    const { container } = render(<App />)
+    const primaryButton = screen.getByRole('button', { name: '立即去比价' })
+    const secondaryButton = screen.getByRole('button', { name: '了解知心租' })
+
+    expect(container.querySelector('.hero-visual')).toHaveAttribute('src', '/assets/hero-visual-figma4.png')
+    expect(primaryButton.querySelector('img')).not.toBeInTheDocument()
+    expect(secondaryButton.querySelector('img')).not.toBeInTheDocument()
+    expect(styles).toMatch(/\.button\{[^}]*width:160px[^}]*height:50px[^}]*border-radius:25px/)
+    expect(styles).toMatch(/\.button\.primary:hover,[^}]*\.button\.primary:focus-visible\{[^}]*color:#fff[^}]*background:#0056d6/)
+  })
+
   it('小支比价蓝色区域的地球装饰水平镜像', () => {
     const { container } = render(<App />)
     const decoration = container.querySelector('#compare .compare-decoration')
@@ -103,16 +115,14 @@ describe('小支租车官网交互', () => {
     expect(container.querySelector('[data-reveal]')).toHaveClass('is-visible')
   })
 
-  it('五种车型都提供对应的场景文案', () => {
+  it('十种车型按 Figma 分类循环展示，只有焦点卡显示场景文案', () => {
     render(<App />)
 
-    ;[
-      '格调出众，尊享体验',
-      '安静高效，低碳智行',
-      '驾控随心，释放激情',
-      '宽适从容，体面出行',
-      '一路皆景，自在安居',
-    ].forEach((copy) => expect(screen.getByText(copy)).toBeInTheDocument())
+    ;['舒适型', '经济型', 'SUV', '豪华型', '新能源', '跑车', '商务车', '房车', '小巴士', '皮卡']
+      .forEach((title) => expect(screen.getByLabelText(title)).toBeInTheDocument())
+    expect(document.querySelectorAll('#cars .car-card')).toHaveLength(10)
+    expect(document.querySelector('#cars .car-card.featured .car-caption small')).toBeInTheDocument()
+    expect(document.querySelectorAll('#cars .car-card:not(.featured) .car-caption small')).toHaveLength(0)
   })
 
   it('比价高亮默认在安心护航，悬停项目时平滑切换并在离开后复位', () => {
@@ -145,18 +155,29 @@ describe('小支租车官网交互', () => {
     expect(rows[1]).toHaveClass('active')
   })
 
-  it('桌面区块使用加高后的空间且联系我们保持原高度', () => {
-    expect(styles).toMatch(/\.hero\{[^}]*height:828px/)
-    expect(styles).toMatch(/\.about\{[^}]*height:858px/)
-    expect(styles).toMatch(/\.cars\{[^}]*height:260vh/)
-    expect(styles).toMatch(/\.compare\{[^}]*height:1026px/)
-    expect(styles).toMatch(/\.service\{[^}]*height:1198px/)
-    expect(styles).toMatch(/\.contact\{[^}]*height:708px/)
+  it('桌面主要区块各占满一屏，联系我们连同页脚刚好收束在一屏内', () => {
+    expect(styles).toMatch(/\.hero\{[^}]*height:100svh/)
+    expect(styles).toMatch(/\.about\{[^}]*height:100svh/)
+    expect(styles).toMatch(/\.cars\{[^}]*height:100svh/)
+    expect(styles).toMatch(/\.compare\{[^}]*height:100svh/)
+    expect(styles).toMatch(/\.service\{[^}]*height:100svh/)
+    expect(styles).toMatch(/\.contact\{[^}]*height:calc\(100svh - 114px\)[^}]*max-height:calc\(100svh - 114px\)/)
+    expect(styles).toMatch(/\.footer\{[^}]*height:114px/)
+  })
+
+  it('联系我们恢复上一版宽度并按人物外扩高度垂直居中', () => {
+    expect(styles).toMatch(/\.contact\{[^}]*display:flex[^}]*align-items:center[^}]*padding-top:114px/)
+    expect(styles).toMatch(/\.contact-inner\{[^}]*width:min\(1200px,calc\(100% - 48px\)\)/)
   })
 
   it('知心租背景保持封面比例，移动端车型使用横向吸附且减少动态效果可降级', () => {
     expect(styles).toMatch(/\.service\{[^}]*background-size:cover/)
     expect(styles).toMatch(/scroll-snap-type:x mandatory/)
     expect(styles).toMatch(/@media\(prefers-reduced-motion:reduce\)/)
+  })
+
+  it('版块标题揭示不使用会阻断可见性观察的全裁切初始态', () => {
+    expect(styles).not.toMatch(/\[data-reveal="title"\]\{[^}]*clip-path:inset\(0 0 100% 0\)/)
+    expect(styles).toMatch(/\[data-reveal="title"\]\{[^}]*opacity:0[^}]*filter:blur\(6px\)/)
   })
 })
