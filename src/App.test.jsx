@@ -1,9 +1,12 @@
 // @vitest-environment jsdom
 import '@testing-library/jest-dom/vitest'
 import React from 'react'
+import { readFileSync } from 'node:fs'
 import { cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import App from './App.jsx'
+
+const styles = readFileSync('src/styles.css', 'utf8')
 
 class IntersectionObserverStub {
   observe() {}
@@ -140,5 +143,20 @@ describe('小支租车官网交互', () => {
 
     fireEvent.blur(list, { relatedTarget: document.body })
     expect(rows[1]).toHaveClass('active')
+  })
+
+  it('桌面区块使用加高后的空间且联系我们保持原高度', () => {
+    expect(styles).toMatch(/\.hero\{[^}]*height:828px/)
+    expect(styles).toMatch(/\.about\{[^}]*height:858px/)
+    expect(styles).toMatch(/\.cars\{[^}]*height:260vh/)
+    expect(styles).toMatch(/\.compare\{[^}]*height:1026px/)
+    expect(styles).toMatch(/\.service\{[^}]*height:1198px/)
+    expect(styles).toMatch(/\.contact\{[^}]*height:708px/)
+  })
+
+  it('知心租背景保持封面比例，移动端车型使用横向吸附且减少动态效果可降级', () => {
+    expect(styles).toMatch(/\.service\{[^}]*background-size:cover/)
+    expect(styles).toMatch(/scroll-snap-type:x mandatory/)
+    expect(styles).toMatch(/@media\(prefers-reduced-motion:reduce\)/)
   })
 })
