@@ -56,7 +56,18 @@ const serviceGroups = [
 ]
 
 function scrollToSection(id) {
-  document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  const section = document.getElementById(id)
+  if (!section) return
+  const root = document.documentElement
+  const previousBehavior = root.style.scrollBehavior
+  const previousSnapType = root.style.scrollSnapType
+  root.style.scrollBehavior = 'auto'
+  root.style.scrollSnapType = 'none'
+  section.scrollIntoView({ behavior: 'auto', block: 'start' })
+  window.setTimeout(() => {
+    root.style.scrollBehavior = previousBehavior
+    root.style.scrollSnapType = previousSnapType
+  }, 80)
 }
 
 function CountUp({ target }) {
@@ -98,7 +109,7 @@ function App() {
   const [dialogOpen, setDialogOpen] = useState(false)
   const [headerScrolled, setHeaderScrolled] = useState(() => window.scrollY >= 24)
   const [activeCar, setActiveCar] = useState(3)
-  const [activeBenefit, setActiveBenefit] = useState(1)
+  const activeBenefit = 1
   const compareButtonRef = useRef(null)
   const carsSectionRef = useRef(null)
   const carRefs = useRef([])
@@ -123,7 +134,7 @@ function App() {
       const section = carsSectionRef.current
       if (!section) return
       if (section.getBoundingClientRect().top < window.innerHeight * 0.82) {
-        section.querySelector('[data-reveal]')?.classList.add('is-visible')
+        section.querySelectorAll('[data-reveal]').forEach((node) => node.classList.add('is-visible'))
       }
 
       if (!media?.matches) {
@@ -224,6 +235,7 @@ function App() {
       <section className="hero" id="home">
         <header className={`site-header shell ${headerScrolled ? 'is-scrolled' : 'at-top'}`}>
           <button className="brand" onClick={() => navigate('home')} aria-label="返回首页">
+            <span className="brand-app-icon" aria-hidden="true"><img src={asset('b086f.png')} alt="" /></span>
             <img className="brand-logo" src={asset('b7255.svg')} alt="" />
           </button>
           <nav className={`nav ${menuOpen ? 'open' : ''}`} aria-label="主导航">
@@ -239,7 +251,7 @@ function App() {
         </header>
 
         <div className="hero-content shell">
-          <div className="hero-copy" data-reveal="copy">
+          <div className="hero-copy">
             <span className="eyebrow">聚合多家服务商 · 同车型智能比价</span>
             <h1>小支租车</h1>
             <h2>比出好价格 租得更放心</h2>
@@ -260,13 +272,13 @@ function App() {
 
       <section className="about" id="about">
         <div className="shell about-grid">
-          <div className="about-copy" data-reveal="copy">
-            <p className="section-kicker">覆盖多元车型与海量车源，服务全国出行需求</p>
-            <p>小支租车是为用户提供在线汽车租赁服务的出行平台，聚合多家租车服务商的车辆资源与报价，通过比价能力帮助用户在同一车型下选出性价比更优的租车方案。小支租车支持自行到店取还车、送车上门、上门取车等多种交车方式，满足用户多场景的四轮自助出行需求，同时提供芝麻信用免押、平台担保交易、免费取消、知心租保障等多种安全可靠便捷的交易方式。用户可在应用内完成从选车、比价、下单、支付到订单查询的完整租车流程，并可实时查看服务商的服务信息，获得服务可视化的使用体验。</p>
+          <div className="about-copy">
+            <p className="section-kicker" data-reveal="copy">覆盖多元车型与海量车源，服务全国出行需求</p>
+            <p data-reveal="copy" style={{ '--reveal-delay': '140ms' }}>小支租车是为用户提供在线汽车租赁服务的出行平台，聚合多家租车服务商的车辆资源与报价，通过比价能力帮助用户在同一车型下选出性价比更优的租车方案。小支租车支持自行到店取还车、送车上门、上门取车等多种交车方式，满足用户多场景的四轮自助出行需求，同时提供芝麻信用免押、平台担保交易、免费取消、知心租保障等多种安全可靠便捷的交易方式。用户可在应用内完成从选车、比价、下单、支付到订单查询的完整租车流程，并可实时查看服务商的服务信息，获得服务可视化的使用体验。</p>
           </div>
-          <div className="scale-heading" data-reveal="title">
-            <h2>业务规模</h2>
-            <span>Business scale</span>
+          <div className="scale-heading">
+            <h2 data-reveal="title">业务规模</h2>
+            <span data-reveal="copy" style={{ '--reveal-delay': '120ms' }}>Business scale</span>
           </div>
           <div className="stats">
             <article data-reveal="card" style={{ '--reveal-delay': '80ms' }}><strong><CountUp target={50000} /><small>+</small></strong><h3>车型</h3><p>覆盖经济型到豪华型全系</p></article>
@@ -279,9 +291,9 @@ function App() {
       <section className="cars" id="cars" ref={carsSectionRef}>
         <div className="cars-stage" style={{ backgroundImage: `linear-gradient(rgba(0,0,0,.6),rgba(0,0,0,.6)),url(${asset('acb79.png')})` }}>
           <div className="shell cars-content">
-            <div className="section-title light align-right" data-reveal="title">
-              <h2>车型介绍</h2>
-              <p>多样车型选择，满足不同出行场景</p>
+            <div className="section-title light align-right">
+              <h2 data-reveal="title">车型介绍</h2>
+              <p data-reveal="copy" style={{ '--reveal-delay': '120ms' }}>多样车型选择 满足不同出行场景</p>
             </div>
           </div>
           <div className="car-rail" aria-label="车型循环展示">
@@ -303,18 +315,12 @@ function App() {
 
       <section className="compare" id="compare">
         <div className="shell compare-inner">
-          <div className="section-title" data-reveal="title">
-            <h2>小支比价</h2>
-            <p>透明价格 比出超高性价比</p>
+          <div className="section-title">
+            <h2 data-reveal="title">小支比价</h2>
+            <p data-reveal="copy" style={{ '--reveal-delay': '120ms' }}>透明价格 比出超高性价比</p>
           </div>
           <div
             className="compare-list"
-            data-reveal="copy"
-            style={{ '--reveal-delay': '120ms' }}
-            onMouseLeave={() => setActiveBenefit(1)}
-            onBlur={(event) => {
-              if (!event.currentTarget.contains(event.relatedTarget)) setActiveBenefit(1)
-            }}
           >
             <div className="compare-highlight" aria-hidden="true" style={{ '--active-index': String(activeBenefit), '--highlight-y': `${activeBenefit * 182}px` }}>
               <img className="compare-decoration" src={asset('b9389.png')} alt="" style={{ transform: 'scaleX(-1)' }} />
@@ -323,10 +329,9 @@ function App() {
               <article
                 className={`compare-row ${index === activeBenefit ? 'active' : ''}`}
                 key={item.title}
-                tabIndex="0"
+                data-reveal="copy"
+                style={{ '--reveal-delay': `${100 + index * 120}ms` }}
                 aria-current={index === activeBenefit ? 'true' : undefined}
-                onMouseEnter={() => setActiveBenefit(index)}
-                onFocus={() => setActiveBenefit(index)}
               >
                 <span className="compare-icon">
                   <img className="compare-icon-inactive" src={asset(item.icon)} alt="" />
@@ -342,13 +347,13 @@ function App() {
 
       <section className="service" id="service" style={{ backgroundImage: `linear-gradient(rgba(0,0,0,.5),rgba(0,0,0,.5)),url(${asset('fa5ca.png')})` }}>
         <div className="shell service-inner">
-          <div className="section-title light" data-reveal="title">
-            <h2>知心租</h2>
-            <p>订取用还 全程保障</p>
+          <div className="section-title light">
+            <h2 data-reveal="title">知心租</h2>
+            <p data-reveal="copy" style={{ '--reveal-delay': '120ms' }}>订取用还 全程保障</p>
           </div>
-          <div className="service-groups" data-reveal="copy" style={{ '--reveal-delay': '140ms' }}>
+          <div className="service-groups">
             {serviceGroups.map((group, groupIndex) => (
-              <article className={`service-group service-group-${groupIndex}`} key={group.title}>
+              <article className={`service-group service-group-${groupIndex}`} key={group.title} data-reveal="card" style={{ '--reveal-delay': `${100 + groupIndex * 140}ms` }}>
                 <h3>{group.title}</h3>
                 <div className="service-items">
                   {group.items.map(([title, copy, icon]) => (
@@ -369,30 +374,32 @@ function App() {
         </div>
       </section>
 
-      <section className="contact" id="contact">
-        <div className="shell contact-inner">
-          <img className="contact-texture" src={asset('63637.png')} alt="" />
-          <div className="contact-mascot-wrap" data-contact-reveal="mascot">
-            <img className="contact-mascot" src={asset('250d0.png')} alt="小支租车服务形象" />
-          </div>
-          <div className="contact-copy">
-            <h2>
-              <span data-contact-reveal="left" style={{ '--contact-delay': '140ms' }}>联系我们</span>
-              <span data-contact-reveal="right" style={{ '--contact-delay': '260ms' }}>随时为你解答租车问题</span>
-            </h2>
-            <p data-contact-reveal="left" style={{ '--contact-delay': '390ms' }}>上支付宝搜索“小支租车”，访问小程序</p>
-            <div className="contact-links" data-contact-reveal="right" style={{ '--contact-delay': '520ms' }}>
-              <a className="contact-chip" href="tel:4009030845"><span>客服热线</span><b />4009030845</a>
-              <a className="contact-chip email" href="mailto:xiaozhizuche@163.com"><span>官方邮箱</span><b />xiaozhizuche@163.com</a>
+      <div className="contact-snap">
+        <section className="contact" id="contact">
+          <div className="shell contact-inner">
+            <img className="contact-texture" src={asset('63637.png')} alt="" />
+            <div className="contact-mascot-wrap" data-contact-reveal="mascot">
+              <img className="contact-mascot" src={asset('250d0.png')} alt="小支租车服务形象" />
+            </div>
+            <div className="contact-copy">
+              <h2>
+                <span data-contact-reveal="left" style={{ '--contact-delay': '140ms' }}>联系我们</span>
+                <span data-contact-reveal="right" style={{ '--contact-delay': '260ms' }}>随时为你解答租车问题</span>
+              </h2>
+              <p data-contact-reveal="left" style={{ '--contact-delay': '390ms' }}>上支付宝搜索“小支租车”，访问小程序</p>
+              <div className="contact-links" data-contact-reveal="right" style={{ '--contact-delay': '520ms' }}>
+                <a className="contact-chip" href="tel:4009030845"><span>客服热线</span><b />4009030845</a>
+                <a className="contact-chip email" href="mailto:xiaozhizuche@163.com"><span>官方邮箱</span><b />xiaozhizuche@163.com</a>
+              </div>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      <footer className="footer shell">
-        <span>©2026 小支租车版权所有</span>
-        <span>聚合多家服务商 · 同车型智能比价</span>
-      </footer>
+        <footer className="footer shell">
+          <span>©2026 小支租车版权所有</span>
+          <span>聚合多家服务商 · 同车型智能比价</span>
+        </footer>
+      </div>
       {dialogOpen && <MiniProgramDialog onClose={() => setDialogOpen(false)} returnFocusRef={compareButtonRef} />}
     </main>
   )

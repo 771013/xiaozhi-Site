@@ -46,12 +46,14 @@ describe('小支租车官网交互', () => {
     expect(openButton).toHaveFocus()
   })
 
-  it('页头使用小支官网4的横版品牌标识', () => {
+  it('页头使用带白色描边圆角图标的小支官网4品牌标识', () => {
     const { container } = render(<App />)
     const brandImage = container.querySelector('.site-header .brand-logo')
+    const brandIcon = container.querySelector('.site-header .brand-app-icon img')
 
     expect(brandImage).toHaveAttribute('src', '/assets/header-logo.svg')
-    expect(container.querySelector('.site-header .brand-mark')).not.toBeInTheDocument()
+    expect(brandIcon).toHaveAttribute('src', '/assets/brand-logo.png')
+    expect(styles).toMatch(/\.brand-app-icon\{[^}]*border:1px solid #fff[^}]*border-radius:10px/)
   })
 
   it('首屏使用小支官网4的新主视觉和无箭头胶囊按钮', () => {
@@ -91,6 +93,7 @@ describe('小支租车官网交互', () => {
     expect(screen.getByRole('heading', { name: '比出好价格 租得更放心' })).toBeInTheDocument()
     expect(screen.getByText('透明价格 比出超高性价比')).toBeInTheDocument()
     expect(screen.getByText('订取用还 全程保障')).toBeInTheDocument()
+    expect(screen.getByText('多样车型选择 满足不同出行场景')).toBeInTheDocument()
   })
 
   it('观察器不可用时直接展示最终数据与内容', () => {
@@ -138,14 +141,22 @@ describe('小支租车官网交互', () => {
     expect(styles).toMatch(/\.stats\{[^}]*transform:translate\(-8px,-78px\)/)
   })
 
-  it('联系我们为人物和左右交错文案提供独立的高级揭示序列', () => {
+  it('联系我们为人物和左右交错文案提供独立揭示且人物入场后保持静止', () => {
     const { container } = render(<App />)
 
     expect(container.querySelector('#contact [data-contact-reveal="mascot"] .contact-mascot')).toBeInTheDocument()
     expect(container.querySelectorAll('#contact [data-contact-reveal="left"]')).toHaveLength(2)
     expect(container.querySelectorAll('#contact [data-contact-reveal="right"]')).toHaveLength(2)
-    expect(styles).toMatch(/\[data-contact-reveal="mascot"\]\{[^}]*filter:blur\(12px\)/)
-    expect(styles).toMatch(/\.contact-mascot-wrap\.is-visible \.contact-mascot\{[^}]*animation:contactMascotFloat/)
+    expect(styles).toMatch(/\[data-contact-reveal="mascot"\]\{[^}]*opacity:1[^}]*filter:blur\(8px\)/)
+    expect(styles).not.toMatch(/contactMascotFloat/)
+    expect(styles).not.toMatch(/\.contact-mascot-wrap\.is-visible \.contact-mascot\{[^}]*animation:/)
+  })
+
+  it('整屏吸附下导航仍可直接抵达目标模块', () => {
+    render(<App />)
+
+    fireEvent.click(screen.getByRole('button', { name: '联系我们' }))
+    expect(Element.prototype.scrollIntoView).toHaveBeenCalledWith({ behavior: 'auto', block: 'start' })
   })
 
   it('小支比价和联系我们白色板块顶部不保留圆角', () => {
@@ -153,7 +164,7 @@ describe('小支租车官网交互', () => {
     expect(styles).toMatch(/\.contact\{[^}]*border-radius:0/)
   })
 
-  it('比价高亮默认在安心护航，悬停项目时平滑切换并在离开后复位', () => {
+  it('比价高亮固定在安心护航，鼠标悬停不再切换', () => {
     const { container } = render(<App />)
     const list = container.querySelector('#compare .compare-list')
     const rows = [...container.querySelectorAll('#compare .compare-row')]
@@ -163,24 +174,41 @@ describe('小支租车官网交互', () => {
     expect(highlight.style.getPropertyValue('--active-index')).toBe('1')
 
     fireEvent.mouseEnter(rows[0])
-    expect(rows[0]).toHaveClass('active')
-    expect(highlight.style.getPropertyValue('--active-index')).toBe('0')
+    expect(rows[1]).toHaveClass('active')
+    expect(highlight.style.getPropertyValue('--active-index')).toBe('1')
 
     fireEvent.mouseLeave(list)
     expect(rows[1]).toHaveClass('active')
     expect(highlight.style.getPropertyValue('--active-index')).toBe('1')
   })
 
-  it('比价项目支持键盘焦点切换，焦点离开列表后恢复默认项', () => {
+  it('比价项目不再提供可聚焦的切换状态', () => {
     const { container } = render(<App />)
-    const list = container.querySelector('#compare .compare-list')
     const rows = [...container.querySelectorAll('#compare .compare-row')]
 
-    fireEvent.focus(rows[2])
-    expect(rows[2]).toHaveClass('active')
-
-    fireEvent.blur(list, { relatedTarget: document.body })
+    expect(rows.every((row) => !row.hasAttribute('tabindex'))).toBe(true)
     expect(rows[1]).toHaveClass('active')
+  })
+
+  it('首页文字静态展示，其他区块内容按段落和卡片渐进揭示', () => {
+    const { container } = render(<App />)
+
+    expect(container.querySelector('.hero-copy')).not.toHaveAttribute('data-reveal')
+    expect(container.querySelectorAll('#about .about-copy > [data-reveal]')).toHaveLength(2)
+    expect(container.querySelectorAll('#cars .section-title > [data-reveal]')).toHaveLength(2)
+    expect(container.querySelectorAll('#compare .compare-row[data-reveal]')).toHaveLength(3)
+    expect(container.querySelectorAll('#service .service-group[data-reveal]')).toHaveLength(3)
+  })
+
+  it('桌面端每个模块强制整屏吸附，联系我们与页脚共用最后一个吸附单元', () => {
+    const { container } = render(<App />)
+    const contactSnap = container.querySelector('.contact-snap')
+
+    expect(contactSnap?.querySelector('#contact')).toBeInTheDocument()
+    expect(contactSnap?.querySelector('.footer')).toBeInTheDocument()
+    expect(styles).toMatch(/@media\(min-width:901px\)\{[^}]*html\{[^}]*scroll-snap-type:y mandatory/)
+    expect(styles).toMatch(/\.hero,\.about,\.cars,\.compare,\.service,\.contact-snap\{[^}]*scroll-snap-align:start[^}]*scroll-snap-stop:always/)
+    expect(styles).toMatch(/\.contact-snap\{[^}]*height:100svh/)
   })
 
   it('桌面主要区块各占满一屏，联系我们连同页脚刚好收束在一屏内', () => {
