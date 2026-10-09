@@ -99,4 +99,16 @@ describe('小支租车官网交互', () => {
     expect(container.querySelector('[data-count="50000"]')).toHaveTextContent('50000')
     expect(container.querySelector('[data-reveal]')).toHaveClass('is-visible')
   })
+
+  it('五种车型都提供对应的场景文案', () => {
+    render(<App />)
+
+    ;[
+      '格调出众，尊享体验',
+      '安静高效，低碳智行',
+      '驾控随心，释放激情',
+      '宽适从容，体面出行',
+      '一路皆景，自在安居',
+    ].forEach((copy) => expect(screen.getByText(copy)).toBeInTheDocument())
+  })
 })

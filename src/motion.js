@@ -13,6 +13,24 @@ export function countAtProgress(target, progress) {
   return Math.round(target * easeOutQuart(progress))
 }
 
+export function getActiveCarIndex(progress, count) {
+  if (count <= 1) return 0
+  return Math.round(clamp(progress, 0, 1) * (count - 1))
+}
+
+export function getCarPose(index, progress, count = 5) {
+  const stage = clamp(progress, 0, 1) * (count - 1)
+  const distance = index - stage
+  const focus = Math.max(0, 1 - Math.abs(distance))
+
+  return {
+    x: 20 + (distance * 278),
+    scale: 1 + (focus * 0.55),
+    opacity: clamp(1 - (Math.abs(distance) * 0.16), 0.38, 1),
+    zIndex: Math.max(1, 20 - Math.round(Math.abs(distance) * 3)),
+  }
+}
+
 export function prefersReducedMotion() {
   return typeof window !== 'undefined'
     && typeof window.matchMedia === 'function'

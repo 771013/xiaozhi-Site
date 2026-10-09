@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { asset } from './assets.js'
-import { prefersReducedMotion, useCountUp } from './motion.js'
+import { clamp, getActiveCarIndex, getCarPose, prefersReducedMotion, useCountUp } from './motion.js'
 
 const navItems = [
   ['首页', 'home'],
@@ -12,12 +12,11 @@ const navItems = [
 ]
 
 const carCards = [
-  { title: '新能源', image: '07bb9.png', teaser: true },
   { title: '豪华型', copy: '格调出众，尊享体验', image: '0fdb6.png' },
-  { title: '新能源', image: 'f1fcb.png' },
-  { title: '跑车', image: '4b2e0.png' },
-  { title: '商务车', image: '54d20.png' },
-  { title: '房车', image: 'd4595.png' },
+  { title: '新能源', copy: '安静高效，低碳智行', image: 'f1fcb.png' },
+  { title: '跑车', copy: '驾控随心，释放激情', image: '4b2e0.png' },
+  { title: '商务车', copy: '宽适从容，体面出行', image: '54d20.png' },
+  { title: '房车', copy: '一路皆景，自在安居', image: 'd4595.png' },
 ]
 
 const compareItems = [
@@ -93,13 +92,80 @@ function App() {
   const [menuOpen, setMenuOpen] = useState(false)
   const [dialogOpen, setDialogOpen] = useState(false)
   const [headerScrolled, setHeaderScrolled] = useState(() => window.scrollY >= 24)
+  const [activeCar, setActiveCar] = useState(0)
   const compareButtonRef = useRef(null)
+  const carsSectionRef = useRef(null)
+  const carRefs = useRef([])
+  const activeCarRef = useRef(0)
 
   useEffect(() => {
     const updateHeader = () => setHeaderScrolled(window.scrollY >= 24)
     updateHeader()
     window.addEventListener('scroll', updateHeader, { passive: true })
     return () => window.removeEventListener('scroll', updateHeader)
+  }, [])
+
+  useEffect(() => {
+    const media = window.matchMedia?.('(min-width: 901px)')
+    const motionDisabled = prefersReducedMotion()
+    let frame = 0
+
+    const renderCars = () => {
+      frame = 0
+      const section = carsSectionRef.current
+      if (!section) return
+      const sectionRect = section.getBoundingClientRect()
+
+      if (sectionRect.top < window.innerHeight * 0.82) {
+        section.querySelector('[data-reveal]')?.classList.add('is-visible')
+      }
+
+      if (!media?.matches) {
+        carRefs.current.forEach((card) => {
+          if (!card) return
+          card.style.transform = ''
+          card.style.opacity = ''
+          card.style.zIndex = ''
+        })
+        return
+      }
+
+      const scrollDistance = Math.max(1, section.offsetHeight - window.innerHeight)
+      const progress = clamp(-sectionRect.top / scrollDistance, 0, 1)
+      carRefs.current.forEach((card, index) => {
+        if (!card) return
+        const pose = getCarPose(index, progress, carCards.length)
+        card.style.transform = `translate3d(${pose.x}px,0,0) scale(${pose.scale})`
+        card.style.opacity = String(pose.opacity)
+        card.style.zIndex = String(pose.zIndex)
+      })
+
+      const nextActive = getActiveCarIndex(progress, carCards.length)
+      if (nextActive !== activeCarRef.current) {
+        activeCarRef.current = nextActive
+        setActiveCar(nextActive)
+      }
+    }
+
+    const scheduleRender = () => {
+      if (!frame) frame = requestAnimationFrame(renderCars)
+    }
+
+    if (motionDisabled) {
+      renderCars()
+      return undefined
+    }
+
+    scheduleRender()
+    window.addEventListener('scroll', scheduleRender, { passive: true })
+    window.addEventListener('resize', scheduleRender)
+    media?.addEventListener?.('change', scheduleRender)
+    return () => {
+      window.removeEventListener('scroll', scheduleRender)
+      window.removeEventListener('resize', scheduleRender)
+      media?.removeEventListener?.('change', scheduleRender)
+      if (frame) cancelAnimationFrame(frame)
+    }
   }, [])
 
   useEffect(() => {
@@ -204,23 +270,27 @@ function App() {
         </div>
       </section>
 
-      <section className="cars" id="cars" style={{ backgroundImage: `linear-gradient(rgba(0,0,0,.6),rgba(0,0,0,.6)),url(${asset('acb79.png')})` }}>
-        <div className="shell cars-content">
-          <div className="section-title light align-right" data-reveal="title">
-            <h2>车型介绍</h2>
-            <p>多样车型选择，满足不同出行场景</p>
-          </div>
-          <div className="car-rail">
-            {carCards.map((car, index) => (
-              car.teaser ? <div className="car-card teaser" key="teaser" aria-hidden="true"><img src={asset(car.image)} alt="" /></div> :
-              <article
-                className={`car-card ${index === 1 ? 'featured' : ''}`}
-                key={`${car.title}-${car.image}`}
-              >
-                <img src={asset(car.image)} alt="" />
-                <span className="car-caption"><strong>{car.title}</strong>{index === 1 && <small>{car.copy}</small>}</span>
-              </article>
-            ))}
+      <section className="cars" id="cars" ref={carsSectionRef}>
+        <div className="cars-stage" style={{ backgroundImage: `linear-gradient(rgba(0,0,0,.6),rgba(0,0,0,.6)),url(${asset('acb79.png')})` }}>
+          <div className="shell cars-content">
+            <div className="section-title light align-right" data-reveal="title">
+              <h2>车型介绍</h2>
+              <p>多样车型选择，满足不同出行场景</p>
+            </div>
+            <div className="car-rail">
+              <div className="car-card teaser" aria-hidden="true"><img src={asset('07bb9.png')} alt="" /></div>
+              {carCards.map((car, index) => (
+                <article
+                  className={`car-card ${index === activeCar ? 'featured' : ''}`}
+                  key={`${car.title}-${car.image}`}
+                  ref={(node) => { carRefs.current[index] = node }}
+                  aria-current={index === activeCar ? 'true' : undefined}
+                >
+                  <img src={asset(car.image)} alt="" />
+                  <span className="car-caption"><strong>{car.title}</strong><small>{car.copy}</small></span>
+                </article>
+              ))}
+            </div>
           </div>
         </div>
       </section>
