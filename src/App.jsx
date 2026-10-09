@@ -86,7 +86,15 @@ function App() {
   const [active, setActive] = useState('home')
   const [menuOpen, setMenuOpen] = useState(false)
   const [dialogOpen, setDialogOpen] = useState(false)
+  const [headerScrolled, setHeaderScrolled] = useState(() => window.scrollY >= 24)
   const compareButtonRef = useRef(null)
+
+  useEffect(() => {
+    const updateHeader = () => setHeaderScrolled(window.scrollY >= 24)
+    updateHeader()
+    window.addEventListener('scroll', updateHeader, { passive: true })
+    return () => window.removeEventListener('scroll', updateHeader)
+  }, [])
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -114,10 +122,9 @@ function App() {
   return (
     <main className="page">
       <section className="hero" id="home">
-        <header className="site-header shell">
+        <header className={`site-header shell ${headerScrolled ? 'is-scrolled' : 'at-top'}`}>
           <button className="brand" onClick={() => navigate('home')} aria-label="返回首页">
-            <span className="brand-mark"><img src={asset('b086f.png')} alt="" /></span>
-            <span>小支租车</span>
+            <img className="brand-logo" src={asset('b7255.svg')} alt="" />
           </button>
           <nav className={`nav ${menuOpen ? 'open' : ''}`} aria-label="主导航">
             {navItems.map(([label, id]) => (
@@ -135,7 +142,7 @@ function App() {
           <div className="hero-copy">
             <span className="eyebrow">聚合多家服务商 · 同车型智能比价</span>
             <h1>小支租车</h1>
-            <h2>比出好价格，租得更放心</h2>
+            <h2>比出好价格 租得更放心</h2>
             <p>在线汽车租赁服务平台 — 到店取还、送车上门、上门取车多种交车方式，<br className="desktop-only" />芝麻信用免押、平台担保交易、免费取消、知心租保障，全流程自助省心。</p>
             <div className="hero-actions">
               <button className="button primary" ref={compareButtonRef} onClick={() => setDialogOpen(true)}>立即去比价 <img src={asset('231fa.svg')} alt="" /></button>
@@ -193,7 +200,7 @@ function App() {
         <div className="shell compare-inner">
           <div className="section-title">
             <h2>小支比价</h2>
-            <p>透明价格，比出超高性价比</p>
+            <p>透明价格 比出超高性价比</p>
           </div>
           <div className="compare-list">
             {compareItems.map((item, index) => (
@@ -204,7 +211,7 @@ function App() {
                 <span className="compare-icon"><img src={asset(item.icon)} alt="" /></span>
                 <strong>{item.title}</strong>
                 <span className="compare-description">{item.copy}</span>
-                {index === 1 && <img className="compare-decoration" src={asset('b9389.png')} alt="" />}
+                {index === 1 && <img className="compare-decoration" src={asset('b9389.png')} alt="" style={{ transform: 'scaleX(-1)' }} />}
               </article>
             ))}
           </div>
@@ -215,7 +222,7 @@ function App() {
         <div className="shell service-inner">
           <div className="section-title light">
             <h2>知心租</h2>
-            <p>订取用还，全程保障</p>
+            <p>订取用还 全程保障</p>
           </div>
           <div className="service-groups">
             {serviceGroups.map((group, groupIndex) => (

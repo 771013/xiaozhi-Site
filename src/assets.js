@@ -3,6 +3,7 @@
 // both locally and in production builds.
 const localAssets = {
   'b086f.png': 'brand-logo.png',
+  'b7255.svg': 'header-logo.svg',
   '231fa.svg': '042d5.svg',
   '742af.svg': '907dd.svg',
   '661cc.png': 'hero-visual.png',

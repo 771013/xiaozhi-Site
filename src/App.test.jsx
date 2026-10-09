@@ -42,10 +42,38 @@ describe('小支租车官网交互', () => {
     expect(openButton).toHaveFocus()
   })
 
-  it('页头使用完整品牌标识素材', () => {
+  it('页头使用小支官网4的横版品牌标识', () => {
     const { container } = render(<App />)
-    const brandImage = container.querySelector('.site-header .brand-mark img')
+    const brandImage = container.querySelector('.site-header .brand-logo')
 
-    expect(brandImage).toHaveAttribute('src', '/assets/brand-logo.png')
+    expect(brandImage).toHaveAttribute('src', '/assets/header-logo.svg')
+    expect(container.querySelector('.site-header .brand-mark')).not.toBeInTheDocument()
+  })
+
+  it('小支比价蓝色区域的地球装饰水平镜像', () => {
+    const { container } = render(<App />)
+    const decoration = container.querySelector('#compare .compare-row.active .compare-decoration')
+
+    expect(decoration).toHaveStyle({ transform: 'scaleX(-1)' })
+  })
+
+  it('导航在页面顶部透明，滚动超过阈值后切换背景状态', () => {
+    Object.defineProperty(window, 'scrollY', { configurable: true, writable: true, value: 0 })
+    const { container } = render(<App />)
+    const header = container.querySelector('.site-header')
+
+    expect(header).toHaveClass('at-top')
+
+    window.scrollY = 30
+    fireEvent.scroll(window)
+    expect(header).toHaveClass('is-scrolled')
+  })
+
+  it('按页面标注移除三个副标题中的逗号', () => {
+    render(<App />)
+
+    expect(screen.getByRole('heading', { name: '比出好价格 租得更放心' })).toBeInTheDocument()
+    expect(screen.getByText('透明价格 比出超高性价比')).toBeInTheDocument()
+    expect(screen.getByText('订取用还 全程保障')).toBeInTheDocument()
   })
 })
