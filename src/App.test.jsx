@@ -34,16 +34,10 @@ describe('小支租车官网交互', () => {
     expect(container.querySelector('#compare .compare-row.active')).toHaveTextContent('安心护航')
   })
 
-  it('打开比价弹窗后可按 Escape 关闭并恢复按钮焦点', () => {
+  it('首屏不再渲染旧的比价弹窗入口', () => {
     render(<App />)
-    const openButton = screen.getByRole('button', { name: /立即去比价/ })
-
-    fireEvent.click(openButton)
-    expect(screen.getByRole('dialog')).toBeVisible()
-
-    fireEvent.keyDown(document, { key: 'Escape' })
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
-    expect(openButton).toHaveFocus()
+    expect(screen.queryByRole('button', { name: '立即去比价' })).not.toBeInTheDocument()
   })
 
   it('页头仅保留小支租车文字品牌标识，不显示方形汽车图标', () => {
@@ -54,22 +48,82 @@ describe('小支租车官网交互', () => {
     expect(container.querySelector('.site-header .brand-app-icon')).not.toBeInTheDocument()
   })
 
-  it('首屏使用小支官网4的新主视觉和无箭头胶囊按钮', () => {
+  it('首屏使用视频主视觉并移除旧的两个操作按钮', () => {
     const { container } = render(<App />)
-    const primaryButton = screen.getByRole('button', { name: '立即去比价' })
-    const secondaryButton = screen.getByRole('button', { name: '了解知心租' })
 
-    expect(container.querySelector('.hero-visual')).toHaveAttribute('src', '/assets/hero-visual-figma4.png')
-    expect(primaryButton.querySelector('img')).not.toBeInTheDocument()
-    expect(secondaryButton.querySelector('img')).not.toBeInTheDocument()
-    expect(styles).toMatch(/\.button\{[^}]*width:160px[^}]*height:50px[^}]*border-radius:25px/)
-    expect(styles).toMatch(/\.button\.primary:hover,[^}]*\.button\.primary:focus-visible\{[^}]*color:#fff[^}]*background:#0056d6/)
+    expect(container.querySelector('.hero-video')).toHaveAttribute('src', '/assets/TapNow_1791629578777_video_1.mp4')
+    expect(container.querySelector('.hero-video-scrim')).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: '立即去比价' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: '了解知心租' })).not.toBeInTheDocument()
+    expect(styles).toMatch(/\.hero-video-scrim\{[^}]*background:rgba\(0,0,0,\.3\)/)
   })
 
-  it('首页左侧文案四处纵向间距各增加 10px', () => {
+  it('下载APP导航项在触碰时显示二维码状态', () => {
+    const { container } = render(<App />)
+    const downloadButton = screen.getByRole('button', { name: '下载APP' })
+    const downloadMenu = container.querySelector('.app-download')
+
+    expect(downloadButton).toHaveAttribute('aria-expanded', 'false')
+    expect(container.querySelector('.app-download-popover')).toHaveAttribute('aria-hidden', 'true')
+
+    fireEvent.mouseEnter(downloadMenu)
+    expect(downloadButton).toHaveAttribute('aria-expanded', 'true')
+    expect(container.querySelector('.app-download-popover')).toHaveAttribute('aria-hidden', 'false')
+    expect(container.querySelector('.app-download-qr')).toBeInTheDocument()
+
+    fireEvent.mouseLeave(downloadMenu)
+    expect(downloadButton).toHaveAttribute('aria-expanded', 'false')
+  })
+
+  it('下载APP保留图标与胶囊色块，并在蓝色导航中反转为白色', () => {
+    const { container } = render(<App />)
+    const trigger = screen.getByRole('button', { name: '下载APP' })
+    const header = container.querySelector('.site-header')
+
+    expect(trigger.querySelector('.app-download-icon')).toBeInTheDocument()
+    expect(styles).toMatch(/\.app-download-trigger\{[^}]*background:#006aff/)
+    expect(styles).toMatch(/\.site-header\.is-scrolled \.app-download-trigger[^}]*background:#fff/)
+    expect(styles).toMatch(/\.site-header\.is-scrolled \.app-download-trigger[^}]*color:#006aff/)
+
+    window.scrollY = 30
+    fireEvent.scroll(window)
+    expect(header).toHaveClass('is-scrolled')
+  })
+
+  it('下载APP胶囊在两种导航状态下使用指定悬浮色并保持纯白文字', () => {
+    expect(styles).toMatch(/\.nav \.app-download-trigger\{[^}]*color:#fff/)
+    expect(styles).toMatch(/\.nav \.app-download-trigger:hover[^}]*background:#003cbc/)
+    expect(styles).toMatch(/\.site-header\.is-scrolled \.app-download-trigger:hover[^}]*background:#b3d2ff/)
+  })
+
+  it('首屏提示标签使用纯白文字', () => {
+    expect(styles).toMatch(/\.eyebrow\{[^}]*color:#fff/)
+  })
+
+  it('下载APP悬浮层与导航相隔10px并放大二维码', () => {
+    const { container } = render(<App />)
+    const popover = container.querySelector('.app-download-popover')
+    const card = container.querySelector('.app-download-card')
+    const qr = container.querySelector('.app-download-qr')
+
+    expect(popover).toBeInTheDocument()
+    expect(card).toBeInTheDocument()
+    expect(qr).toBeInTheDocument()
+    expect(styles).toMatch(/\.app-download-popover\{[^}]*top:62px/)
+    expect(styles).toMatch(/\.app-download-card\{[^}]*width:193px[^}]*height:193px/)
+    expect(styles).toMatch(/\.app-download-qr\{[^}]*width:177px[^}]*height:177px/)
+  })
+
+  it('下载APP悬浮框底部延长5px且标题字重降低', () => {
+    expect(styles).toMatch(/\.app-download-popover\{[^}]*height:256px/)
+    expect(styles).toMatch(/\.app-download-decoration\{[^}]*height:256px/)
+    expect(styles).toMatch(/\.app-download-caption\{[^}]*font-weight:300/)
+  })
+
+  it('首页左侧文案保留设计中的纵向间距', () => {
     expect(styles).toMatch(/\.hero h1\{[^}]*margin:17px 0 0/)
     expect(styles).toMatch(/\.hero h2\{[^}]*margin:7px 0 23px/)
-    expect(styles).toMatch(/\.hero-actions\{[^}]*margin-top:42px/)
+    expect(styles).not.toMatch(/\.hero-actions\{/)
   })
 
   it('首页副标题使用青色打字轮播并保留三句完整文案', () => {
@@ -273,8 +327,8 @@ describe('小支租车官网交互', () => {
     expect(styles).toMatch(/@media\(min-width:1600px\) and \(min-height:900px\)\{[\s\S]*?\.hero-content\{[^}]*width:min\(1200px,calc\(100% - 48px\)\)/)
   })
 
-  it('Retina 矮屏保持首屏主视觉下沉并让知心租三栏等高', () => {
-    expect(styles).toMatch(/@media\(min-width:901px\) and \(max-height:820px\)\{[\s\S]*?\.hero-visual\{[^}]*top:50%[^}]*translate:0 calc\(-50% \+ clamp\(24px,5svh,40px\)\)/)
+  it('Retina 矮屏保持视频首屏铺满并让知心租三栏等高', () => {
+    expect(styles).toMatch(/\.hero-video-wrap\{[^}]*inset:0/)
     expect(styles).toMatch(/@media\(min-width:901px\) and \(max-height:560px\)\{[\s\S]*?\.service\{z-index:4\}/)
     expect(styles).toMatch(/@media\(min-width:901px\) and \(max-height:560px\)\{[\s\S]*?\.service-inner\{[^}]*gap:8px[^}]*padding-block:8px/)
     expect(styles).toMatch(/@media\(min-width:901px\) and \(max-height:560px\)\{[\s\S]*?\.service-group,\.service-group-2\{height:238px/)

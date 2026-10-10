@@ -74,30 +74,34 @@ function CountUp({ target }) {
   return <span ref={valueRef} data-count={target}>0</span>
 }
 
-function MiniProgramDialog({ onClose, returnFocusRef }) {
-  const closeButton = useRef(null)
+function AppDownloadMenu() {
+  const [open, setOpen] = useState(false)
 
-  useEffect(() => {
-    closeButton.current?.focus()
-    const onKeyDown = (event) => { if (event.key === 'Escape') onClose() }
-    document.addEventListener('keydown', onKeyDown)
-    document.body.style.overflow = 'hidden'
-    return () => {
-      document.removeEventListener('keydown', onKeyDown)
-      document.body.style.overflow = ''
-      returnFocusRef.current?.focus()
-    }
-  }, [onClose, returnFocusRef])
+  const closeOnBlur = (event) => {
+    if (!event.currentTarget.contains(event.relatedTarget)) setOpen(false)
+  }
 
   return (
-    <div className="dialog-backdrop" onMouseDown={(event) => event.target === event.currentTarget && onClose()}>
-      <section className="dialog" role="dialog" aria-modal="true" aria-labelledby="dialog-title">
-        <button className="dialog-close" ref={closeButton} onClick={onClose} aria-label="关闭弹窗">×</button>
-        <span className="dialog-brand"><span className="brand-mark"><img src={asset('b086f.png')} alt="" /></span>小支租车</span>
-        <h2 id="dialog-title">开启你的比价之旅</h2>
-        <p>打开支付宝，搜索“小支租车”小程序，即可按车型比较多家服务商报价，选择适合自己的出行方案。</p>
-        <button className="dialog-action" onClick={() => { onClose(); scrollToSection('compare') }}>了解小支比价 <span aria-hidden="true">→</span></button>
-      </section>
+    <div
+      className="app-download"
+      onMouseEnter={() => setOpen(true)}
+      onMouseLeave={() => setOpen(false)}
+      onFocus={() => setOpen(true)}
+      onBlur={closeOnBlur}
+    >
+      <button className="app-download-trigger" type="button" aria-expanded={open} aria-controls="app-download-popover">
+        <svg className="app-download-icon" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M12 3v11m0 0 5-5m-5 5-5-5M4 15v4h16v-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+        下载APP
+      </button>
+      <div className="app-download-popover" id="app-download-popover" role="tooltip" aria-hidden={!open}>
+        <img className="app-download-decoration" src={asset('app-download-decoration.svg')} alt="" aria-hidden="true" />
+        <span className="app-download-card">
+          <img className="app-download-qr" src={asset('app-download-qr.png')} alt="下载小支租车APP二维码" />
+        </span>
+        <span className="app-download-caption">扫码下载小支租车APP</span>
+      </div>
     </div>
   )
 }
@@ -105,12 +109,10 @@ function MiniProgramDialog({ onClose, returnFocusRef }) {
 function App() {
   const [active, setActive] = useState('home')
   const [menuOpen, setMenuOpen] = useState(false)
-  const [dialogOpen, setDialogOpen] = useState(false)
   const [headerScrolled, setHeaderScrolled] = useState(() => window.scrollY >= 24)
   const [activeCar, setActiveCar] = useState(3)
   const [heroTypewriter, setHeroTypewriter] = useState(() => getTypewriterFrame(0, heroTaglines))
   const activeBenefit = 1
-  const compareButtonRef = useRef(null)
   const carsSectionRef = useRef(null)
   const carRefs = useRef([])
   const activeCarRef = useRef(0)
@@ -280,6 +282,7 @@ function App() {
                 {label}
               </button>
             ))}
+            <AppDownloadMenu />
           </nav>
           <button className="menu-toggle" onClick={() => setMenuOpen((value) => !value)} aria-label={menuOpen ? '关闭导航菜单' : '打开导航菜单'} aria-expanded={menuOpen}>
             <span /><span /><span />
@@ -297,17 +300,11 @@ function App() {
               </span>
             </h2>
             <p>在线汽车租赁服务平台 — 到店取还、送车上门、上门取车多种交车方式，<br className="desktop-only" />芝麻信用免押、平台担保交易、免费取消、知心租保障，全流程自助省心。</p>
-            <div className="hero-actions">
-              <button className="button primary" ref={compareButtonRef} onClick={() => setDialogOpen(true)}>立即去比价</button>
-              <button className="button ghost" onClick={() => navigate('service')}>了解知心租</button>
-            </div>
           </div>
-          <img
-            className="hero-visual"
-            data-reveal="image"
-            src={asset('bd5f5.png')}
-            alt="小支租车小程序界面和蓝色跑车"
-          />
+        </div>
+        <div className="hero-video-wrap" aria-hidden="true">
+          <video className="hero-video" src={asset('hero-video.mp4')} autoPlay muted loop playsInline preload="metadata" />
+          <div className="hero-video-scrim" />
         </div>
       </section>
 
@@ -442,7 +439,6 @@ function App() {
           <span>聚合多家服务商 · 同车型智能比价</span>
         </footer>
       </div>
-      {dialogOpen && <MiniProgramDialog onClose={() => setDialogOpen(false)} returnFocusRef={compareButtonRef} />}
     </main>
   )
 }
