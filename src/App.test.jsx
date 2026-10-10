@@ -46,14 +46,12 @@ describe('小支租车官网交互', () => {
     expect(openButton).toHaveFocus()
   })
 
-  it('页头使用带白色描边圆角图标的小支官网4品牌标识', () => {
+  it('页头仅保留小支租车文字品牌标识，不显示方形汽车图标', () => {
     const { container } = render(<App />)
     const brandImage = container.querySelector('.site-header .brand-logo')
-    const brandIcon = container.querySelector('.site-header .brand-app-icon img')
 
     expect(brandImage).toHaveAttribute('src', '/assets/header-logo.svg')
-    expect(brandIcon).toHaveAttribute('src', '/assets/brand-logo.png')
-    expect(styles).toMatch(/\.brand-app-icon\{[^}]*border:1px solid #fff[^}]*border-radius:10px/)
+    expect(container.querySelector('.site-header .brand-app-icon')).not.toBeInTheDocument()
   })
 
   it('首屏使用小支官网4的新主视觉和无箭头胶囊按钮', () => {
@@ -66,6 +64,23 @@ describe('小支租车官网交互', () => {
     expect(secondaryButton.querySelector('img')).not.toBeInTheDocument()
     expect(styles).toMatch(/\.button\{[^}]*width:160px[^}]*height:50px[^}]*border-radius:25px/)
     expect(styles).toMatch(/\.button\.primary:hover,[^}]*\.button\.primary:focus-visible\{[^}]*color:#fff[^}]*background:#0056d6/)
+  })
+
+  it('首页左侧文案四处纵向间距各增加 10px', () => {
+    expect(styles).toMatch(/\.hero h1\{[^}]*margin:17px 0 0/)
+    expect(styles).toMatch(/\.hero h2\{[^}]*margin:7px 0 23px/)
+    expect(styles).toMatch(/\.hero-actions\{[^}]*margin-top:42px/)
+  })
+
+  it('首页副标题使用青色打字轮播并保留三句完整文案', () => {
+    const { container } = render(<App />)
+    const heading = container.querySelector('.hero-rotating-line')
+
+    expect(heading).toHaveTextContent('比出好价格，租车更省心')
+    expect(heading).toHaveTextContent('比出好价格，选车更明白')
+    expect(heading).toHaveTextContent('比出好价格，好车放心开')
+    expect(styles).toMatch(/\.hero-rotating-line\{[^}]*color:#8cffff/i)
+    expect(styles).toMatch(/\.hero-typewriter-caret\{[^}]*animation:hero-caret-blink \.5s/)
   })
 
   it('小支比价蓝色区域的地球装饰水平镜像', () => {
@@ -87,10 +102,9 @@ describe('小支租车官网交互', () => {
     expect(header).toHaveClass('is-scrolled')
   })
 
-  it('按页面标注移除三个副标题中的逗号', () => {
+  it('其他三个模块的副标题保持无逗号文案', () => {
     render(<App />)
 
-    expect(screen.getByRole('heading', { name: '比出好价格 租得更放心' })).toBeInTheDocument()
     expect(screen.getByText('透明价格 比出超高性价比')).toBeInTheDocument()
     expect(screen.getByText('订取用还 全程保障')).toBeInTheDocument()
     expect(screen.getByText('多样车型选择 满足不同出行场景')).toBeInTheDocument()
@@ -136,7 +150,12 @@ describe('小支租车官网交互', () => {
 
     expect(container.querySelector('#cars .cars-stage > .car-rail')).toBeInTheDocument()
     expect(container.querySelector('#cars .cars-content .car-rail')).not.toBeInTheDocument()
-    expect(styles).toMatch(/\.car-rail\{[^}]*top:calc\(var\(--cars-block-top\) \+ var\(--cars-rail-offset\)\)[^}]*right:0[^}]*bottom:auto[^}]*left:0/)
+    expect(styles).toMatch(/\.car-rail\{[^}]*z-index:1[^}]*top:calc\(var\(--cars-block-top\) \+ var\(--cars-rail-offset\)\)[^}]*right:0[^}]*bottom:auto[^}]*left:0/)
+  })
+
+  it('车型轨道被宽渐变遮罩覆盖，标题与小字保持在遮罩上方', () => {
+    expect(styles).toMatch(/\.cars-stage::before,\.cars-stage::after\{[^}]*width:clamp\(180px,18vw,280px\)[^}]*z-index:2/)
+    expect(styles).toMatch(/\.cars \.section-title\{[^}]*z-index:3/)
   })
 
   it('关于小支的介绍与业务规模作为整体垂直居中', () => {
@@ -162,6 +181,18 @@ describe('小支租车官网交互', () => {
 
     fireEvent.click(screen.getByRole('button', { name: '联系我们' }))
     expect(Element.prototype.scrollIntoView).toHaveBeenCalledWith({ behavior: 'auto', block: 'start' })
+  })
+
+  it('桌面滚轮保持原生跟手滚动，不再拦截或设置时间去重', () => {
+    vi.stubGlobal('matchMedia', vi.fn((query) => ({
+      matches: query === '(min-width: 901px)',
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+    })))
+    render(<App />)
+
+    expect(fireEvent.wheel(window, { deltaY: 4 })).toBe(true)
+    expect(fireEvent.wheel(window, { deltaY: -4 })).toBe(true)
   })
 
   it('小支比价和联系我们白色板块顶部不保留圆角', () => {
@@ -205,16 +236,16 @@ describe('小支租车官网交互', () => {
     expect(container.querySelectorAll('#service .service-group[data-reveal]')).toHaveLength(3)
   })
 
-  it('桌面端每个模块强制整屏吸附，联系我们与页脚共用最后一个吸附单元', () => {
+  it('桌面端使用原生纵向强制吸附，滚动过程保持跟手', () => {
     const { container } = render(<App />)
     const contactSnap = container.querySelector('.contact-snap')
 
     expect(contactSnap?.querySelector('#contact')).toBeInTheDocument()
     expect(contactSnap?.querySelector('.footer')).toBeInTheDocument()
-    expect(styles).toMatch(/@media\(min-width:901px\)\{[^}]*html\{[^}]*scroll-snap-type:y mandatory/)
-    expect(styles).toMatch(/@media\(min-width:901px\)\{[\s\S]*?section\[id\]\{scroll-margin-top:70px\}/)
+    expect(styles).toMatch(/@media\(min-width:901px\)\{[^}]*html\{[^}]*scroll-snap-type:y mandatory[^}]*scroll-padding-top:70px/)
+    expect(styles).toMatch(/@media\(min-width:901px\)\{[\s\S]*?section\[id\]\{scroll-margin-top:0\}/)
     expect(styles).toMatch(/\.hero,\.about,\.cars,\.compare,\.service,\.contact-snap\{[^}]*scroll-snap-align:start[^}]*scroll-snap-stop:always/)
-    expect(styles).toMatch(/\.contact-snap\{[^}]*height:calc\(100svh - 70px\)[^}]*scroll-margin-top:70px/)
+    expect(styles).toMatch(/\.contact-snap\{[^}]*height:calc\(100svh - 70px\)[^}]*scroll-margin-top:0/)
   })
 
   it('桌面导航与主要区块合计占满一屏，联系我们连同页脚刚好收束', () => {
@@ -237,6 +268,16 @@ describe('小支租车官网交互', () => {
     expect(styles).toMatch(/@media\(min-width:901px\) and \(max-height:820px\)\{[\s\S]*?\.compare\{--compare-row-height:150px/)
     expect(styles).toMatch(/@media\(min-width:901px\) and \(max-height:820px\)\{[\s\S]*?\.compare-inner\{[^}]*padding-block:28px/)
     expect(styles).toMatch(/@media\(min-width:901px\) and \(max-height:820px\)\{[\s\S]*?\.service-inner\{[^}]*gap:20px[^}]*padding-block:28px/)
+    expect(styles).toMatch(/@media\(min-width:901px\) and \(max-height:560px\)\{[\s\S]*?\.service-inner\{[^}]*gap:8px[^}]*padding-block:8px/)
+    expect(styles).toMatch(/@media\(min-width:901px\) and \(max-height:560px\)\{[\s\S]*?\.service-group,\.service-group-2\{height:238px/)
+    expect(styles).toMatch(/@media\(min-width:1600px\) and \(min-height:900px\)\{[\s\S]*?\.hero-content\{[^}]*width:min\(1600px,calc\(100% - 64px\)\)/)
+  })
+
+  it('Retina 矮屏保持首屏主视觉下沉并让知心租三栏等高', () => {
+    expect(styles).toMatch(/@media\(min-width:901px\) and \(max-height:820px\)\{[\s\S]*?\.hero-visual\{[^}]*top:50%[^}]*translate:0 calc\(-50% \+ clamp\(24px,5svh,40px\)\)/)
+    expect(styles).toMatch(/@media\(min-width:901px\) and \(max-height:560px\)\{[\s\S]*?\.service\{z-index:4\}/)
+    expect(styles).toMatch(/@media\(min-width:901px\) and \(max-height:560px\)\{[\s\S]*?\.service-inner\{[^}]*gap:8px[^}]*padding-block:8px/)
+    expect(styles).toMatch(/@media\(min-width:901px\) and \(max-height:560px\)\{[\s\S]*?\.service-group,\.service-group-2\{height:238px/)
   })
 
   it('桌面端比价与知心租内容组在可用一屏内垂直居中', () => {
@@ -263,5 +304,10 @@ describe('小支租车官网交互', () => {
     expect(styles).not.toMatch(/\[data-contact-reveal\]\{[^}]*filter:blur\(/)
     expect(styles).not.toMatch(/\[data-contact-reveal="mascot"\]\{[^}]*filter:blur\(/)
     expect(styles).toMatch(/\[data-contact-reveal\]\{[^}]*opacity:0[^}]*filter:none[^}]*transition:opacity/)
+  })
+
+  it('指定模块的文字与内容入场时长增加 50%，数字计数与汽车卡片节奏不变', () => {
+    expect(styles).toMatch(/#about \[data-reveal\],#cars \.section-title \[data-reveal\],#compare \[data-reveal\],#service \[data-reveal\]\{transition-duration:1\.725s,2\.025s\}/)
+    expect(styles).not.toMatch(/#cars \.car-card[^\{]*\{[^}]*transition-duration:1\.725s/)
   })
 })

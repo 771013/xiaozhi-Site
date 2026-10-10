@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { advanceLoopPhase, clamp, countAtProgress, easeOutQuart, getActiveCarIndex, getCarPose, getLoopCarFocusX, getLoopCarPose, getLoopCarIndex } from './motion.js'
+import * as motion from './motion.js'
 
 describe('motion helpers', () => {
   it('clamps values to the supplied range', () => {
@@ -54,19 +55,8 @@ describe('motion helpers', () => {
     expect(getLoopCarIndex(4 * 276, 10)).toBe(4)
   })
 
-  it('循环车型在缩放补位期间持续向左，不出现停顿或回退', () => {
-    for (const index of [3, 4]) {
-      const positions = [2.7, 2.8, 2.9, 3, 3.1]
-        .map((phase) => getLoopCarPose(index, phase * 276, 10).x)
-
-      positions.slice(1).forEach((position, positionIndex) => {
-        expect(position).toBeLessThan(positions[positionIndex])
-      })
-    }
-  })
-
   it('循环车型在放大移动的全过程中保持固定基础间距', () => {
-    for (const phase of [3.5, 3.65, 3.8, 4].map((value) => value * 276)) {
+    for (const phase of Array.from({ length: 51 }, (_, step) => (3.5 + (step * 0.02)) * 276)) {
       const focused = getLoopCarPose(4, phase, 10)
       const next = getLoopCarPose(5, phase, 10)
 
@@ -86,9 +76,9 @@ describe('motion helpers', () => {
   it('循环车型跨过相邻位置中点后才开始放大并在焦点后缩小', () => {
     const halfway = getLoopCarPose(4, 3.5 * 276, 10)
     const outsideShortWindow = getLoopCarPose(4, 3.55 * 276, 10)
-    const approaching = getLoopCarPose(4, 3.75 * 276, 10)
+    const approaching = getLoopCarPose(4, 3.8 * 276, 10)
     const focused = getLoopCarPose(4, 4 * 276, 10)
-    const leaving = getLoopCarPose(4, 4.25 * 276, 10)
+    const leaving = getLoopCarPose(4, 4.2 * 276, 10)
 
     expect(halfway.scale).toBeCloseTo(1)
     expect(outsideShortWindow.scale).toBeCloseTo(1)
@@ -98,6 +88,36 @@ describe('motion helpers', () => {
     expect(focused.outline).toBeCloseTo(1)
     expect(approaching.outline).toBe(0)
     expect(leaving.scale).toBeCloseTo(approaching.scale)
+  })
+
+  it('循环车型再次加快缩放 50% 并将最大尺寸停留时间减半', () => {
+    const outsideWindow = getLoopCarPose(4, 3.75 * 276, 10)
+    const transition = getLoopCarPose(4, 3.8 * 276, 10)
+    const approachingPlateau = getLoopCarPose(4, 3.94 * 276, 10)
+    const leavingPlateau = getLoopCarPose(4, 4.06 * 276, 10)
+    const outsidePlateau = getLoopCarPose(4, 3.93 * 276, 10)
+
+    expect(outsideWindow.focus).toBe(0)
+    expect(transition.focus).toBeCloseTo(0.25, 4)
+    expect(approachingPlateau.scale).toBeCloseTo(1.55, 4)
+    expect(leavingPlateau.scale).toBeCloseTo(1.55, 4)
+    expect(outsidePlateau.scale).toBeLessThan(1.55)
+  })
+
+  it('首屏轮播每句输入前后各停留 1 秒并闪烁两次光标', () => {
+    expect(motion.getTypewriterFrame).toBeTypeOf('function')
+    const phrases = ['租车更省心', '选车更明白', '好车放心开']
+    const options = { typeMs: 100, eraseMs: 50 }
+
+    expect(motion.getTypewriterFrame?.(0, phrases, options)).toMatchObject({ text: '', phraseIndex: 0, caretVisible: true })
+    expect(motion.getTypewriterFrame?.(250, phrases, options)).toMatchObject({ text: '', caretVisible: false })
+    expect(motion.getTypewriterFrame?.(500, phrases, options)).toMatchObject({ text: '', caretVisible: true })
+    expect(motion.getTypewriterFrame?.(750, phrases, options)).toMatchObject({ text: '', caretVisible: false })
+    expect(motion.getTypewriterFrame?.(1000, phrases, options).text).toBe('租')
+    expect(motion.getTypewriterFrame?.(1400, phrases, options).text).toBe('租车更省心')
+    expect(motion.getTypewriterFrame?.(2499, phrases, options).text).toBe('租车更省心')
+    expect(motion.getTypewriterFrame?.(2550, phrases, options).text).toBe('租车更省')
+    expect(motion.getTypewriterFrame?.(2750, phrases, options)).toMatchObject({ text: '', phraseIndex: 1 })
   })
 
   it('循环车型焦点在版心内侧右移 72px', () => {

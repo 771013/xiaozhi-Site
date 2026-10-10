@@ -38,11 +38,65 @@ export function getCarPose(index, progress, count = 5) {
 const LOOP_CARD_WIDTH = 258
 const LOOP_CARD_GAP = 18
 const LOOP_CARD_STEP = LOOP_CARD_WIDTH + LOOP_CARD_GAP
-const LOOP_FOCUS_RANGE = 0.4
+const PREVIOUS_LOOP_FOCUS_RANGE = 0.4
+const PREVIOUS_LOOP_TRANSITION_RANGE = PREVIOUS_LOOP_FOCUS_RANGE / 1.5
+const LOOP_SCALE_TRANSITION_RANGE = PREVIOUS_LOOP_TRANSITION_RANGE / 1.5
+const LOOP_MAX_HOLD_HALF_RANGE = (PREVIOUS_LOOP_FOCUS_RANGE - PREVIOUS_LOOP_TRANSITION_RANGE) / 2
+const LOOP_FOCUS_RANGE = LOOP_SCALE_TRANSITION_RANGE + LOOP_MAX_HOLD_HALF_RANGE
 const LOOP_LEADING_SPACE_SHARE = 0.5
 
 function wrapDistance(value, range) {
   return ((((value + (range / 2)) % range) + range) % range) - (range / 2)
+}
+
+function getLoopCarFocus(distance) {
+  return clamp(
+    (LOOP_FOCUS_RANGE - Math.abs(distance)) / LOOP_SCALE_TRANSITION_RANGE,
+    0,
+    1,
+  )
+}
+
+export function getTypewriterFrame(elapsedMs, phrases, options = {}) {
+  const values = phrases.filter(Boolean)
+  if (!values.length) return { text: '', phraseIndex: 0, caretVisible: false }
+
+  const preHoldMs = Math.max(0, options.preHoldMs ?? 1000)
+  const typeMs = Math.max(1, options.typeMs ?? 90)
+  const holdMs = Math.max(0, options.holdMs ?? 1000)
+  const eraseMs = Math.max(1, options.eraseMs ?? 50)
+  const caretMs = Math.max(1, options.caretMs ?? 250)
+  const durations = values.map((phrase) => preHoldMs + (phrase.length * typeMs) + holdMs + (phrase.length * eraseMs))
+  const totalDuration = durations.reduce((total, duration) => total + duration, 0)
+  let localTime = ((Math.max(0, elapsedMs) % totalDuration) + totalDuration) % totalDuration
+  let phraseIndex = 0
+
+  while (localTime >= durations[phraseIndex] && phraseIndex < values.length - 1) {
+    localTime -= durations[phraseIndex]
+    phraseIndex += 1
+  }
+
+  const phrase = values[phraseIndex]
+  const typeDuration = phrase.length * typeMs
+  const typeEnd = preHoldMs + typeDuration
+  const holdEnd = typeEnd + holdMs
+  let characterCount
+
+  if (localTime < preHoldMs) {
+    characterCount = 0
+  } else if (localTime < typeEnd) {
+    characterCount = Math.min(phrase.length, Math.floor((localTime - preHoldMs) / typeMs) + 1)
+  } else if (localTime < holdEnd) {
+    characterCount = phrase.length
+  } else {
+    characterCount = Math.max(0, phrase.length - Math.floor((localTime - holdEnd) / eraseMs))
+  }
+
+  return {
+    text: phrase.slice(0, characterCount),
+    phraseIndex,
+    caretVisible: Math.floor(Math.max(0, elapsedMs) / caretMs) % 2 === 0,
+  }
 }
 
 export function getLoopCarFocusX(viewportWidth, shellWidth = 1200, gutter = 24) {
@@ -56,11 +110,9 @@ export function advanceLoopPhase(phase, elapsedMs) {
 export function getLoopCarPose(index, phase, count = 10, focusX = 320) {
   const total = LOOP_CARD_STEP * Math.max(1, count)
   const distance = wrapDistance((index * LOOP_CARD_STEP) - phase, total) / LOOP_CARD_STEP
-  const focusProgress = clamp(1 - (Math.abs(distance) / LOOP_FOCUS_RANGE), 0, 1)
-  const focus = focusProgress
+  const focus = getLoopCarFocus(distance)
   const focusedDistance = distance - Math.round(distance)
-  const focusedProgress = clamp(1 - (Math.abs(focusedDistance) / LOOP_FOCUS_RANGE), 0, 1)
-  const focusedAmount = focusedProgress
+  const focusedAmount = getLoopCarFocus(focusedDistance)
   const focusedExtraWidth = LOOP_CARD_WIDTH * 0.55
   const reservedWidth = focusedExtraWidth * focusedAmount
   const leadingOffset = -reservedWidth * LOOP_LEADING_SPACE_SHARE

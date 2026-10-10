@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { asset } from './assets.js'
-import { advanceLoopPhase, getLoopCarFocusX, getLoopCarIndex, getLoopCarPose, prefersReducedMotion, useCountUp } from './motion.js'
+import { advanceLoopPhase, getLoopCarFocusX, getLoopCarIndex, getLoopCarPose, getTypewriterFrame, prefersReducedMotion, useCountUp } from './motion.js'
 
 const navItems = [
   ['首页', 'home'],
@@ -10,6 +10,8 @@ const navItems = [
   ['知心租', 'service'],
   ['联系我们', 'contact'],
 ]
+
+const heroTaglines = ['租车更省心', '选车更明白', '好车放心开']
 
 const carCards = [
   { title: '舒适型', copy: '宽适均衡，轻松出行', image: 'car-comfort.png' },
@@ -60,13 +62,10 @@ function scrollToSection(id) {
   if (!section) return
   const root = document.documentElement
   const previousBehavior = root.style.scrollBehavior
-  const previousSnapType = root.style.scrollSnapType
   root.style.scrollBehavior = 'auto'
-  root.style.scrollSnapType = 'none'
   section.scrollIntoView({ behavior: 'auto', block: 'start' })
   window.setTimeout(() => {
     root.style.scrollBehavior = previousBehavior
-    root.style.scrollSnapType = previousSnapType
   }, 80)
 }
 
@@ -109,6 +108,7 @@ function App() {
   const [dialogOpen, setDialogOpen] = useState(false)
   const [headerScrolled, setHeaderScrolled] = useState(() => window.scrollY >= 24)
   const [activeCar, setActiveCar] = useState(3)
+  const [heroTypewriter, setHeroTypewriter] = useState(() => getTypewriterFrame(0, heroTaglines))
   const activeBenefit = 1
   const compareButtonRef = useRef(null)
   const carsSectionRef = useRef(null)
@@ -132,6 +132,27 @@ function App() {
     updateHeader()
     window.addEventListener('scroll', updateHeader, { passive: true })
     return () => window.removeEventListener('scroll', updateHeader)
+  }, [])
+
+  useEffect(() => {
+    if (prefersReducedMotion()) {
+      setHeroTypewriter({ text: heroTaglines[0], phraseIndex: 0, caretVisible: false })
+      return undefined
+    }
+
+    let frame = 0
+    let startTime
+    const tick = (time) => {
+      startTime ??= time
+      const next = getTypewriterFrame(time - startTime, heroTaglines)
+      setHeroTypewriter((previous) => (
+        previous.text === next.text && previous.phraseIndex === next.phraseIndex ? previous : next
+      ))
+      frame = requestAnimationFrame(tick)
+    }
+
+    frame = requestAnimationFrame(tick)
+    return () => cancelAnimationFrame(frame)
   }, [])
 
   useEffect(() => {
@@ -251,7 +272,6 @@ function App() {
       <section className="hero" id="home">
         <header className={`site-header shell ${headerScrolled ? 'is-scrolled' : 'at-top'}`}>
           <button className="brand" onClick={() => navigate('home')} aria-label="返回首页">
-            <span className="brand-app-icon" aria-hidden="true"><img src={asset('b086f.png')} alt="" /></span>
             <img className="brand-logo" src={asset('b7255.svg')} alt="" />
           </button>
           <nav className={`nav ${menuOpen ? 'open' : ''}`} aria-label="主导航">
@@ -270,7 +290,12 @@ function App() {
           <div className="hero-copy">
             <span className="eyebrow">聚合多家服务商 · 同车型智能比价</span>
             <h1>小支租车</h1>
-            <h2>比出好价格 租得更放心</h2>
+            <h2 className="hero-rotating-line">
+              <span className="sr-only">比出好价格，租车更省心；比出好价格，选车更明白；比出好价格，好车放心开</span>
+              <span className="hero-typewriter-visual" aria-hidden="true">
+                比出好价格，<span className="hero-typewriter-copy">{heroTypewriter.text}</span><span className="hero-typewriter-caret">_</span>
+              </span>
+            </h2>
             <p>在线汽车租赁服务平台 — 到店取还、送车上门、上门取车多种交车方式，<br className="desktop-only" />芝麻信用免押、平台担保交易、免费取消、知心租保障，全流程自助省心。</p>
             <div className="hero-actions">
               <button className="button primary" ref={compareButtonRef} onClick={() => setDialogOpen(true)}>立即去比价</button>
