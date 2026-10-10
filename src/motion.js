@@ -38,23 +38,23 @@ export function getCarPose(index, progress, count = 5) {
 const LOOP_CARD_WIDTH = 258
 const LOOP_CARD_GAP = 18
 const LOOP_CARD_STEP = LOOP_CARD_WIDTH + LOOP_CARD_GAP
-const PREVIOUS_LOOP_FOCUS_RANGE = 0.4
-const PREVIOUS_LOOP_TRANSITION_RANGE = PREVIOUS_LOOP_FOCUS_RANGE / 1.5
-const LOOP_SCALE_TRANSITION_RANGE = PREVIOUS_LOOP_TRANSITION_RANGE / 1.5
-const LOOP_MAX_HOLD_HALF_RANGE = (PREVIOUS_LOOP_FOCUS_RANGE - PREVIOUS_LOOP_TRANSITION_RANGE) / 2
-const LOOP_FOCUS_RANGE = LOOP_SCALE_TRANSITION_RANGE + LOOP_MAX_HOLD_HALF_RANGE
-const LOOP_LEADING_SPACE_SHARE = 0.5
+const LOOP_FOCUS_RANGE = 0.38
+const LOOP_MAX_HOLD_HALF_RANGE = 0.07
+const LOOP_MAX_SCALE = 1.42
 
 function wrapDistance(value, range) {
   return ((((value + (range / 2)) % range) + range) % range) - (range / 2)
 }
 
 function getLoopCarFocus(distance) {
-  return clamp(
-    (LOOP_FOCUS_RANGE - Math.abs(distance)) / LOOP_SCALE_TRANSITION_RANGE,
+  const transitionRange = LOOP_FOCUS_RANGE - LOOP_MAX_HOLD_HALF_RANGE
+  const progress = clamp(
+    (LOOP_FOCUS_RANGE - Math.abs(distance)) / transitionRange,
     0,
     1,
   )
+
+  return progress * progress * (3 - (2 * progress))
 }
 
 export function getTypewriterFrame(elapsedMs, phrases, options = {}) {
@@ -113,16 +113,14 @@ export function getLoopCarPose(index, phase, count = 10, focusX = 320) {
   const focus = getLoopCarFocus(distance)
   const focusedDistance = distance - Math.round(distance)
   const focusedAmount = getLoopCarFocus(focusedDistance)
-  const focusedExtraWidth = LOOP_CARD_WIDTH * 0.55
+  const focusedExtraWidth = LOOP_CARD_WIDTH * (LOOP_MAX_SCALE - 1)
   const reservedWidth = focusedExtraWidth * focusedAmount
-  const leadingOffset = -reservedWidth * LOOP_LEADING_SPACE_SHARE
-  const trailingOffset = reservedWidth * (1 - LOOP_LEADING_SPACE_SHARE)
-  const focusCompensation = focusedExtraWidth * LOOP_LEADING_SPACE_SHARE
-  const spacingOffset = distance > focusedDistance ? trailingOffset : leadingOffset
+  const focusCompensation = focusedExtraWidth / 2
+  const spacingOffset = distance > focusedDistance ? reservedWidth / 2 : -reservedWidth / 2
 
   return {
     x: focusX + focusCompensation + (distance * LOOP_CARD_STEP) + spacingOffset,
-    scale: 1 + (focus * 0.55),
+    scale: 1 + (focus * (LOOP_MAX_SCALE - 1)),
     focus,
     outline: clamp((focus - 0.72) / 0.28, 0, 1),
     opacity: 1,

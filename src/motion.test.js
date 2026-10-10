@@ -83,25 +83,27 @@ describe('motion helpers', () => {
     expect(halfway.scale).toBeCloseTo(1)
     expect(outsideShortWindow.scale).toBeCloseTo(1)
     expect(approaching.scale).toBeGreaterThan(halfway.scale)
-    expect(focused.scale).toBeCloseTo(1.55)
+    expect(focused.scale).toBeCloseTo(1.42)
     expect(focused.focus).toBeCloseTo(1)
     expect(focused.outline).toBeCloseTo(1)
     expect(approaching.outline).toBe(0)
     expect(leaving.scale).toBeCloseTo(approaching.scale)
   })
 
-  it('循环车型再次加快缩放 50% 并将最大尺寸停留时间减半', () => {
-    const outsideWindow = getLoopCarPose(4, 3.75 * 276, 10)
+  it('循环车型以平滑曲线进入焦点并短暂停留在最大尺寸', () => {
+    const outsideWindow = getLoopCarPose(4, 3.6 * 276, 10)
+    const entering = getLoopCarPose(4, 3.65 * 276, 10)
     const transition = getLoopCarPose(4, 3.8 * 276, 10)
     const approachingPlateau = getLoopCarPose(4, 3.94 * 276, 10)
     const leavingPlateau = getLoopCarPose(4, 4.06 * 276, 10)
-    const outsidePlateau = getLoopCarPose(4, 3.93 * 276, 10)
+    const outsidePlateau = getLoopCarPose(4, 3.92 * 276, 10)
 
     expect(outsideWindow.focus).toBe(0)
-    expect(transition.focus).toBeCloseTo(0.25, 4)
-    expect(approachingPlateau.scale).toBeCloseTo(1.55, 4)
-    expect(leavingPlateau.scale).toBeCloseTo(1.55, 4)
-    expect(outsidePlateau.scale).toBeLessThan(1.55)
+    expect(entering.focus).toBeGreaterThan(0)
+    expect(transition.focus).toBeGreaterThan(entering.focus)
+    expect(approachingPlateau.scale).toBeCloseTo(1.42, 4)
+    expect(leavingPlateau.scale).toBeCloseTo(1.42, 4)
+    expect(outsidePlateau.scale).toBeLessThan(1.42)
   })
 
   it('首屏轮播每句输入前后各停留 1 秒并闪烁两次光标', () => {
@@ -140,6 +142,19 @@ describe('motion helpers', () => {
       expect(pose.x).toBeGreaterThanOrEqual(shellLeft)
       expect(pose.x + (258 * pose.scale)).toBeLessThanOrEqual(shellRight)
     })
+  })
+
+  it('循环车型缩放时沿轨道单向移动且不会产生过度放大', () => {
+    const poses = Array.from({ length: 31 }, (_, step) => {
+      const phase = (3.7 + (step * 0.02)) * 276
+      return getLoopCarPose(4, phase, 10, 320)
+    })
+
+    poses.slice(1).forEach((pose, index) => {
+      expect(pose.x).toBeLessThan(poses[index].x)
+    })
+
+    expect(Math.max(...poses.map((pose) => pose.scale))).toBeLessThanOrEqual(1.45)
   })
 
   it('循环车型在当前节奏上再加快 10%', () => {
