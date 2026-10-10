@@ -100,17 +100,30 @@ describe('motion helpers', () => {
     expect(leaving.scale).toBeCloseTo(approaching.scale)
   })
 
-  it('循环车型焦点落在全宽舞台的版心左边缘', () => {
-    expect(getLoopCarFocusX(1440)).toBe(120)
-    expect(getLoopCarFocusX(1280)).toBe(40)
-    expect(getLoopCarFocusX(1024)).toBe(24)
+  it('循环车型焦点在版心内侧右移 72px', () => {
+    expect(getLoopCarFocusX(1440)).toBe(192)
+    expect(getLoopCarFocusX(1280)).toBe(112)
+    expect(getLoopCarFocusX(1024)).toBe(96)
 
     const focused = getLoopCarPose(3, 3 * 276, 10, getLoopCarFocusX(1440))
-    expect(focused.x).toBeCloseTo(120, 4)
+    expect(focused.x).toBeCloseTo(192, 4)
   })
 
-  it('循环车型以更紧凑的节奏经过放大焦点', () => {
-    expect(advanceLoopPhase(0, 16)).toBeCloseTo(1.2672)
-    expect(advanceLoopPhase(10, 100)).toBeCloseTo(13.168)
+  it('循环车型的放大缩小过程保持在版心内', () => {
+    const shellLeft = 120
+    const shellRight = 1320
+    const focusX = getLoopCarFocusX(1440)
+    const poses = [2.6, 2.8, 3, 3.2, 3.4]
+      .map((phase) => getLoopCarPose(3, phase * 276, 10, focusX))
+
+    poses.forEach((pose) => {
+      expect(pose.x).toBeGreaterThanOrEqual(shellLeft)
+      expect(pose.x + (258 * pose.scale)).toBeLessThanOrEqual(shellRight)
+    })
+  })
+
+  it('循环车型在当前节奏上再加快 10%', () => {
+    expect(advanceLoopPhase(0, 16)).toBeCloseTo(1.39392)
+    expect(advanceLoopPhase(10, 100)).toBeCloseTo(13.4848)
   })
 })

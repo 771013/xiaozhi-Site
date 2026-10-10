@@ -46,11 +46,11 @@ function wrapDistance(value, range) {
 }
 
 export function getLoopCarFocusX(viewportWidth, shellWidth = 1200, gutter = 24) {
-  return Math.max(gutter, (viewportWidth - shellWidth) / 2)
+  return Math.max(gutter, (viewportWidth - shellWidth) / 2) + 72
 }
 
 export function advanceLoopPhase(phase, elapsedMs) {
-  return phase + (Math.min(40, Math.max(0, elapsedMs)) * 0.0792)
+  return phase + (Math.min(40, Math.max(0, elapsedMs)) * 0.08712)
 }
 
 export function getLoopCarPose(index, phase, count = 10, focusX = 320) {

@@ -136,16 +136,14 @@ describe('小支租车官网交互', () => {
 
     expect(container.querySelector('#cars .cars-stage > .car-rail')).toBeInTheDocument()
     expect(container.querySelector('#cars .cars-content .car-rail')).not.toBeInTheDocument()
-    expect(styles).toMatch(/\.car-rail\{[^}]*top:clamp\(210px,25vh,270px\)[^}]*right:0[^}]*bottom:auto[^}]*left:0/)
+    expect(styles).toMatch(/\.car-rail\{[^}]*top:calc\(var\(--cars-block-top\) \+ var\(--cars-rail-offset\)\)[^}]*right:0[^}]*bottom:auto[^}]*left:0/)
   })
 
-  it('业务规模标题与数据区域使用相同的底部对齐偏移', () => {
-    expect(styles).toMatch(/\.scale-heading\{[^}]*position:relative[^}]*top:-78px/)
-    expect(styles).toMatch(/\.stats\{[^}]*transform:translate\(-8px,-78px\)/)
-  })
-
-  it('关于小支的两段介绍整体下移 50px', () => {
-    expect(styles).toMatch(/\.about-copy\{[^}]*transform:translateY\(50px\)/)
+  it('关于小支的介绍与业务规模作为整体垂直居中', () => {
+    expect(styles).toMatch(/\.about-grid\{[^}]*grid-template-rows:auto auto[^}]*align-content:center/)
+    expect(styles).toMatch(/\.about-copy\{[^}]*transform:none/)
+    expect(styles).toMatch(/\.scale-heading\{[^}]*position:relative[^}]*top:0/)
+    expect(styles).toMatch(/\.stats\{[^}]*transform:translateX\(-8px\)/)
   })
 
   it('联系我们为人物和左右交错文案提供独立揭示且人物入场后保持静止', () => {
@@ -234,10 +232,17 @@ describe('小支租车官网交互', () => {
     expect(styles).toMatch(/@media\(min-width:901px\)\{[\s\S]*?\.cars\{margin-bottom:0\}/)
     expect(styles).toMatch(/@media\(min-width:901px\)\{[\s\S]*?\.service\{margin-top:0\}/)
     expect(styles).toMatch(/@media\(min-width:901px\) and \(max-height:820px\)\{/)
-    expect(styles).toMatch(/@media\(min-width:901px\) and \(max-height:820px\)\{[\s\S]*?\.about-grid\{[^}]*padding-top:48px[^}]*padding-bottom:34px/)
-    expect(styles).toMatch(/@media\(min-width:901px\) and \(max-height:820px\)\{[\s\S]*?\.car-rail\{[^}]*top:150px/)
+    expect(styles).toMatch(/@media\(min-width:901px\) and \(max-height:820px\)\{[\s\S]*?\.about-grid\{[^}]*gap:32px[^}]*padding-block:28px/)
+    expect(styles).toMatch(/@media\(min-width:901px\) and \(max-height:820px\)\{[\s\S]*?\.cars\{[^}]*--cars-block-height:561px[^}]*--cars-rail-offset:110px/)
     expect(styles).toMatch(/@media\(min-width:901px\) and \(max-height:820px\)\{[\s\S]*?\.compare\{--compare-row-height:150px/)
-    expect(styles).toMatch(/@media\(min-width:901px\) and \(max-height:820px\)\{[\s\S]*?\.service-groups\{[^}]*bottom:32px/)
+    expect(styles).toMatch(/@media\(min-width:901px\) and \(max-height:820px\)\{[\s\S]*?\.compare-inner\{[^}]*padding-block:28px/)
+    expect(styles).toMatch(/@media\(min-width:901px\) and \(max-height:820px\)\{[\s\S]*?\.service-inner\{[^}]*gap:20px[^}]*padding-block:28px/)
+  })
+
+  it('桌面端比价与知心租内容组在可用一屏内垂直居中', () => {
+    expect(styles).toMatch(/@media\(min-width:901px\)\{[\s\S]*?\.compare-inner\{[^}]*height:100%[^}]*display:flex[^}]*flex-direction:column[^}]*justify-content:center/)
+    expect(styles).toMatch(/@media\(min-width:901px\)\{[\s\S]*?\.service-inner\{[^}]*display:flex[^}]*flex-direction:column[^}]*justify-content:center/)
+    expect(styles).toMatch(/@media\(min-width:901px\)\{[\s\S]*?\.service-groups\{[^}]*position:relative[^}]*inset:auto/)
   })
 
   it('联系我们恢复上一版宽度并按人物外扩高度垂直居中', () => {
