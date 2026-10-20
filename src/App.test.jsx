@@ -323,15 +323,23 @@ describe('小支租车官网交互', () => {
     expect(styles).toMatch(/@media\(min-width:901px\) and \(max-height:820px\)\{[\s\S]*?\.compare-inner\{[^}]*padding-block:28px/)
     expect(styles).toMatch(/@media\(min-width:901px\) and \(max-height:820px\)\{[\s\S]*?\.service-inner\{[^}]*gap:20px[^}]*padding-block:28px/)
     expect(styles).toMatch(/@media\(min-width:901px\) and \(max-height:560px\)\{[\s\S]*?\.service-inner\{[^}]*gap:8px[^}]*padding-block:8px/)
-    expect(styles).toMatch(/@media\(min-width:901px\) and \(max-height:560px\)\{[\s\S]*?\.service-group,\.service-group-2\{height:238px/)
+    expect(styles).toMatch(/@media\(min-width:901px\) and \(max-height:560px\)\{[\s\S]*?\.service-group,\.service-group-2\{height:auto/)
     expect(styles).toMatch(/@media\(min-width:1600px\) and \(min-height:900px\)\{[\s\S]*?\.hero-content\{[^}]*width:min\(1200px,calc\(100% - 48px\)\)/)
   })
 
-  it('Retina 矮屏保持视频首屏铺满并让知心租三栏等高', () => {
+  it('Retina 矮屏保持视频首屏铺满并压缩知心租内容', () => {
     expect(styles).toMatch(/\.hero-video-wrap\{[^}]*inset:0/)
     expect(styles).toMatch(/@media\(min-width:901px\) and \(max-height:560px\)\{[\s\S]*?\.service\{z-index:4\}/)
     expect(styles).toMatch(/@media\(min-width:901px\) and \(max-height:560px\)\{[\s\S]*?\.service-inner\{[^}]*gap:8px[^}]*padding-block:8px/)
-    expect(styles).toMatch(/@media\(min-width:901px\) and \(max-height:560px\)\{[\s\S]*?\.service-group,\.service-group-2\{height:238px/)
+  })
+
+  it('知心租矮屏保持紧凑卡片间距，不用自动空白撑开灰色模块', () => {
+    expect(styles).not.toMatch(/@media\(min-width:901px\)\{[\s\S]*?\.service-items\{[^}]*flex:1/)
+    expect(styles).not.toMatch(/\.service-group \.service-entry:last-child\{[^}]*margin-top:auto/)
+    expect(styles).toMatch(/@media\(min-width:901px\) and \(max-height:820px\)\{[\s\S]*?\.service-group,\.service-group-2\{height:auto[^}]*padding:14px 16px/)
+    expect(styles).toMatch(/@media\(min-width:901px\) and \(max-height:820px\)\{[\s\S]*?\.service-group-2 \.service-entry:last-child\{margin-top:8px/)
+    expect(styles).toMatch(/@media\(min-width:901px\) and \(max-height:560px\)\{[\s\S]*?\.service-group,\.service-group-2\{height:auto[^}]*padding:10px 12px/)
+    expect(styles).toMatch(/@media\(min-width:901px\) and \(max-height:560px\)\{[\s\S]*?\.service-group-2 \.service-entry:last-child\{margin-top:6px/)
   })
 
   it('桌面端比价与知心租内容组在可用一屏内垂直居中', () => {
