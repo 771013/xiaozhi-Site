@@ -339,6 +339,11 @@ describe('小支租车官网交互', () => {
     expect(styles).toMatch(/@media\(min-width:901px\) and \(max-height:560px\)\{[\s\S]*?\.compare\{height:620px\}/)
   })
 
+  it('极矮桌面允许自然滚动查看完整联系我们板块', () => {
+    expect(styles).toMatch(/@media\(min-width:901px\) and \(max-height:560px\)\{[\s\S]*?\.contact-snap\{height:auto\}/)
+    expect(styles).toMatch(/@media\(min-width:901px\) and \(max-height:560px\)\{[\s\S]*?\.contact\{height:640px;max-height:none\}/)
+  })
+
   it('知心租矮屏保持紧凑卡片间距，不用自动空白撑开灰色模块', () => {
     expect(styles).not.toMatch(/@media\(min-width:901px\)\{[\s\S]*?\.service-items\{[^}]*flex:1/)
     expect(styles).not.toMatch(/\.service-group \.service-entry:last-child\{[^}]*margin-top:auto/)
