@@ -247,9 +247,12 @@ section[id]{scroll-margin-top:70px}
 }
 
 @media(min-width:901px) and (max-height:560px){
+  html{scroll-snap-type:none}
   .hero h1{font-size:48px;line-height:1.25}
   .hero h2{margin-bottom:18px;font-size:20px}
   .hero-copy>p{font-size:14px;line-height:1.55}
+  .cars{height:640px}
+  .compare{height:620px}
   .service{z-index:4}
   .service-inner{gap:8px;padding-block:8px}
   .service .section-title h2{font-size:32px;line-height:1.25}

@@ -333,6 +333,12 @@ describe('小支租车官网交互', () => {
     expect(styles).toMatch(/@media\(min-width:901px\) and \(max-height:560px\)\{[\s\S]*?\.service-inner\{[^}]*gap:8px[^}]*padding-block:8px/)
   })
 
+  it('极矮桌面允许自然滚动查看完整车型与比价内容', () => {
+    expect(styles).toMatch(/@media\(min-width:901px\) and \(max-height:560px\)\{[\s\S]*?html\{scroll-snap-type:none\}/)
+    expect(styles).toMatch(/@media\(min-width:901px\) and \(max-height:560px\)\{[\s\S]*?\.cars\{height:640px\}/)
+    expect(styles).toMatch(/@media\(min-width:901px\) and \(max-height:560px\)\{[\s\S]*?\.compare\{height:620px\}/)
+  })
+
   it('知心租矮屏保持紧凑卡片间距，不用自动空白撑开灰色模块', () => {
     expect(styles).not.toMatch(/@media\(min-width:901px\)\{[\s\S]*?\.service-items\{[^}]*flex:1/)
     expect(styles).not.toMatch(/\.service-group \.service-entry:last-child\{[^}]*margin-top:auto/)
