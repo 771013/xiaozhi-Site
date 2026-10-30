@@ -322,7 +322,7 @@ describe('小支租车官网交互', () => {
     expect(styles).toMatch(/@media\(min-width:901px\) and \(max-height:820px\)\{[\s\S]*?\.compare\{--compare-row-height:150px/)
     expect(styles).toMatch(/@media\(min-width:901px\) and \(max-height:820px\)\{[\s\S]*?\.compare-inner\{[^}]*padding-block:28px/)
     expect(styles).toMatch(/@media\(min-width:901px\) and \(max-height:820px\)\{[\s\S]*?\.service-inner\{[^}]*gap:20px[^}]*padding-block:28px/)
-    expect(styles).toMatch(/@media\(min-width:901px\) and \(max-height:560px\)\{[\s\S]*?\.service-inner\{[^}]*gap:8px[^}]*padding-block:8px/)
+    expect(styles).toMatch(/@media\(min-width:901px\) and \(max-height:560px\)\{[\s\S]*?\.service-inner\{[^}]*height:auto[^}]*gap:24px[^}]*padding-block:48px/)
     expect(styles).toMatch(/@media\(min-width:901px\) and \(max-height:560px\)\{[\s\S]*?\.service-group,\.service-group-2\{height:auto/)
     expect(styles).toMatch(/@media\(min-width:1600px\) and \(min-height:900px\)\{[\s\S]*?\.hero-content\{[^}]*width:min\(1200px,calc\(100% - 48px\)\)/)
   })
@@ -330,18 +330,24 @@ describe('小支租车官网交互', () => {
   it('Retina 矮屏保持视频首屏铺满并压缩知心租内容', () => {
     expect(styles).toMatch(/\.hero-video-wrap\{[^}]*inset:0/)
     expect(styles).toMatch(/@media\(min-width:901px\) and \(max-height:560px\)\{[\s\S]*?\.service\{z-index:4\}/)
-    expect(styles).toMatch(/@media\(min-width:901px\) and \(max-height:560px\)\{[\s\S]*?\.service-inner\{[^}]*gap:8px[^}]*padding-block:8px/)
+    expect(styles).toMatch(/@media\(min-width:901px\) and \(max-height:560px\)\{[\s\S]*?\.service-inner\{[^}]*height:auto[^}]*gap:24px[^}]*padding-block:48px/)
   })
 
   it('极矮桌面允许自然滚动查看完整车型与比价内容', () => {
     expect(styles).toMatch(/@media\(min-width:901px\) and \(max-height:560px\)\{[\s\S]*?html\{scroll-snap-type:none\}/)
-    expect(styles).toMatch(/@media\(min-width:901px\) and \(max-height:560px\)\{[\s\S]*?\.cars\{height:640px\}/)
-    expect(styles).toMatch(/@media\(min-width:901px\) and \(max-height:560px\)\{[\s\S]*?\.compare\{height:620px\}/)
+    expect(styles).toMatch(/@media\(min-width:901px\) and \(max-height:560px\)\{[\s\S]*?\.about\{height:auto;min-height:700px\}/)
+    expect(styles).toMatch(/@media\(min-width:901px\) and \(max-height:560px\)\{[\s\S]*?\.cars\{height:auto;min-height:640px\}/)
+    expect(styles).toMatch(/@media\(min-width:901px\) and \(max-height:560px\)\{[\s\S]*?\.compare\{height:auto;min-height:620px\}/)
   })
 
   it('极矮桌面允许自然滚动查看完整联系我们板块', () => {
     expect(styles).toMatch(/@media\(min-width:901px\) and \(max-height:560px\)\{[\s\S]*?\.contact-snap\{height:auto\}/)
-    expect(styles).toMatch(/@media\(min-width:901px\) and \(max-height:560px\)\{[\s\S]*?\.contact\{height:640px;max-height:none\}/)
+    expect(styles).toMatch(/@media\(min-width:901px\) and \(max-height:560px\)\{[\s\S]*?\.contact\{height:auto;min-height:640px;max-height:none\}/)
+  })
+
+  it('极矮桌面让知心租按内容自然撑开而不是压缩或裁切', () => {
+    expect(styles).toMatch(/@media\(min-width:901px\) and \(max-height:560px\)\{[\s\S]*?\.service\{height:auto;min-height:900px\}/)
+    expect(styles).toMatch(/@media\(min-width:901px\) and \(max-height:560px\)\{[\s\S]*?\.service-inner\{height:auto;gap:24px;padding-block:48px\}/)
   })
 
   it('知心租矮屏保持紧凑卡片间距，不用自动空白撑开灰色模块', () => {
